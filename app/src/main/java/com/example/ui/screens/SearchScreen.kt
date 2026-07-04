@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -82,7 +81,7 @@ fun SearchScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color(0xFFBAC9C9)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 ),
                 singleLine = true
             )
@@ -171,7 +170,7 @@ fun SearchScreen(
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
                                             Text(item.task.title, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                            Text("Task • Priority: ${item.task.priority}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                            Text("Task • Priority: ${item.task.priority}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -187,7 +186,7 @@ fun SearchScreen(
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
                                             Text(item.note.title, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                            Text(item.note.content, style = MaterialTheme.typography.bodySmall, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(item.note.content, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                         }
                                     }
                                 }
@@ -203,7 +202,7 @@ fun SearchScreen(
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
                                             Text(item.capture.title, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                            Text("Screenshot Category: ${item.capture.category}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                            Text("Screenshot Category: ${item.capture.category}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -219,7 +218,7 @@ fun SearchScreen(
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No matching items found.", color = Color.Gray)
+                    Text("No matching items found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

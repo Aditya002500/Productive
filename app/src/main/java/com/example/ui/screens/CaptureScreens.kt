@@ -13,6 +13,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +41,25 @@ fun CaptureInboxScreen(
     onBack: () -> Unit
 ) {
     val captures by viewModel.captures.collectAsStateWithLifecycle()
+    val isAnalyzing by viewModel.isAnalyzing.collectAsStateWithLifecycle()
+    val analysisMessage by viewModel.analysisSuccess.collectAsStateWithLifecycle()
     var showCaptureDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Android Photo Picker — no runtime permission required.
+    val photoPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) viewModel.importAndProcess(uri, sourceType = "imported image")
+    }
+
+    // Surface pipeline results as a snackbar.
+    LaunchedEffect(analysisMessage) {
+        analysisMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearAnalysisSuccess()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -47,19 +70,29 @@ fun CaptureInboxScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    IconButton(onClick = { showCaptureDialog = true }) {
+                        Icon(Icons.Default.Science, contentDescription = "Try a demo capture")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showCaptureDialog = true },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Simulate Capture")
-            }
+            ExtendedFloatingActionButton(
+                onClick = {
+                    photoPicker.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                text = { Text("Import") },
+                icon = { Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Import screenshot") }
+            )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -75,6 +108,61 @@ fun CaptureInboxScreen(
                 Tab(selected = false, onClick = { }, text = { Text("Work") })
                 Tab(selected = false, onClick = { }, text = { Text("Finance") })
                 Tab(selected = false, onClick = { }, text = { Text("Receipts") })
+            }
+
+            if (isAnalyzing) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Reading text & organizing…",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            if (captures.isEmpty() && !isAnalyzing) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.AddPhotoAlternate,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "No captures yet",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "Tap Import to pick a screenshot. Text is read on-device, then organized automatically.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+                return@Column
             }
 
             LazyVerticalGrid(
@@ -128,13 +216,13 @@ fun CaptureInboxScreen(
 @Composable
 fun CaptureGridItem(capture: CaptureEntity, onClick: () -> Unit) {
     val statusColor = when (capture.status) {
-        "Needs Review" -> Color(0xFF4338CA) // Indigo
+        "Needs Review" -> MaterialTheme.colorScheme.primary
         "Processed" -> MaterialTheme.colorScheme.onTertiaryContainer
         "Failed OCR" -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val statusBg = when (capture.status) {
-        "Needs Review" -> Color(0xFFEEF2FF)
+        "Needs Review" -> MaterialTheme.colorScheme.primaryContainer
         "Processed" -> MaterialTheme.colorScheme.tertiaryContainer
         "Failed OCR" -> MaterialTheme.colorScheme.errorContainer
         else -> MaterialTheme.colorScheme.surfaceVariant

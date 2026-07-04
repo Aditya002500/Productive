@@ -1,12 +1,18 @@
 package com.example
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,14 +29,30 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
+            val appViewModel: AppViewModel = viewModel()
+            val themeMode by appViewModel.themeMode.collectAsStateWithLifecycle()
+
+            // Share-sheet target: if launched with a shared image, run it through
+            // the capture pipeline immediately.
+            LaunchedEffect(Unit) {
+                val sharedUri: Uri? = if (intent?.action == Intent.ACTION_SEND &&
+                    intent.type?.startsWith("image/") == true
+                ) {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                } else null
+                if (sharedUri != null) {
+                    appViewModel.importAndProcess(sharedUri, sourceType = "shared image")
+                }
+            }
+
+            MyApplicationTheme(themeMode = themeMode) {
                 TexturedBackground {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        color = androidx.compose.ui.graphics.Color.Transparent // Let texture show through
+                        color = MaterialTheme.colorScheme.background
                     ) {
                         val navController = rememberNavController()
-                        val appViewModel: AppViewModel = viewModel()
 
                         NavHost(
                             navController = navController,
@@ -114,6 +136,9 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("home") {
                                             popUpTo("onboarding") { inclusive = true }
                                         }
+                                    },
+                                    onConsentGiven = { given ->
+                                        appViewModel.setConsentGiven(given)
                                     }
                                 )
                             }

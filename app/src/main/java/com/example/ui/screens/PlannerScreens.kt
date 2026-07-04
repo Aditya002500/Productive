@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.EventEntity
+import com.example.ui.theme.accents
 import com.example.ui.AppViewModel
 import com.example.ui.components.TexturedBackground
 import com.example.ui.components.CaptureFlowBottomNavigation
@@ -105,7 +106,7 @@ fun PlannerScreen(
                             text = tabLabel,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFF6B7280)
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     }
@@ -178,15 +179,23 @@ fun PlannerScreen(
                     }
 
                     Text("Color Tag:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                    val eventPalette = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary,
+                        MaterialTheme.colorScheme.tertiary,
+                        MaterialTheme.accents.warning,
+                        MaterialTheme.accents.info,
+                        MaterialTheme.colorScheme.error
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        listOf(Color(0xFF065F46), Color(0xFF047857), Color(0xFF059669), Color(0xFF10B981)).forEachIndexed { idx, color ->
+                        eventPalette.forEachIndexed { idx, color ->
                             Box(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .background(color, CircleShape)
                                     .border(
                                         width = if (selectedColorIndex == idx) 2.dp else 0.dp,
-                                        color = if (selectedColorIndex == idx) Color.Black else Color.Transparent,
+                                        color = if (selectedColorIndex == idx) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                                         shape = CircleShape
                                     )
                                     .clickable { selectedColorIndex = idx }
@@ -247,7 +256,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                 val isSelected = num == 24
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.White
+                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier
                         .width(48.dp)
@@ -263,7 +272,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                         Text(
                             text = name,
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else Color.Gray,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -271,7 +280,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                         Text(
                             text = num.toString(),
                             style = MaterialTheme.typography.titleMedium.copy(
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else Color(0xFF191C1E),
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -294,10 +303,10 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 oct24Events.forEach { event ->
                     val containerColor = when (event.color) {
-                        0 -> Color(0xFFD1FAE5) // Emerald light
-                        1 -> Color(0xFFECFCCB) // Lime light
-                        2 -> Color(0xFFDCFCE7) // Green light
-                        else -> Color(0xFFCCFBF1) // Teal light
+                        0 -> MaterialTheme.colorScheme.primaryContainer // Emerald light
+                        1 -> MaterialTheme.colorScheme.primaryContainer // Lime light
+                        2 -> MaterialTheme.colorScheme.primaryContainer // Green light
+                        else -> MaterialTheme.colorScheme.primaryContainer // Teal light
                     }
 
                     val accentColor = when (event.color) {
@@ -316,7 +325,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                             text = event.timeRange.substringBefore(" -").substringBefore(" PM").substringBefore(" AM"),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6B7280)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             modifier = Modifier.width(60.dp)
                         )
@@ -342,7 +351,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                                         text = event.title,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF191C1E)
+                                            color = MaterialTheme.colorScheme.onSurface
                                         ),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
@@ -353,7 +362,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
                                                 text = event.location,
-                                                style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFF4B5563))
+                                                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             )
                                         }
                                     }
@@ -374,7 +383,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                     .height(180.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No events scheduled for Oct 24.", color = Color.Gray)
+                Text("No events scheduled for Oct 24.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -433,7 +442,7 @@ fun WeekView(events: List<EventEntity>) {
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = "${event.timeRange}: ${event.title}",
-                                        style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF191C1E)),
+                                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -443,7 +452,7 @@ fun WeekView(events: List<EventEntity>) {
                     } else {
                         Text(
                             text = "No events scheduled",
-                            style = MaterialTheme.typography.bodySmall.copy(color = Color.LightGray)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     }
                 }
@@ -473,7 +482,7 @@ fun MonthView(events: List<EventEntity>) {
                 text = "November 2023",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF191C1E)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
         }
@@ -489,7 +498,7 @@ fun MonthView(events: List<EventEntity>) {
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }
@@ -537,7 +546,7 @@ fun MonthView(events: List<EventEntity>) {
                                             style = MaterialTheme.typography.bodyMedium.copy(
                                                 fontWeight = if (isSelected || hasEvents) FontWeight.Bold else FontWeight.Normal,
                                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                                else Color(0xFF191C1E)
+                                                else MaterialTheme.colorScheme.onSurface
                                             )
                                         )
                                         if (hasEvents && !isSelected) {
@@ -588,7 +597,7 @@ fun MonthView(events: List<EventEntity>) {
                                 )
                                 Text(
                                     text = event.timeRange,
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
+                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
                             Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -599,7 +608,7 @@ fun MonthView(events: List<EventEntity>) {
         } else {
             Text(
                 text = "No events scheduled for this day.",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
         }
     }

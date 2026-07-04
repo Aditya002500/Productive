@@ -37,12 +37,12 @@ fun CollectionsScreen(
     onNavigateToSearch: (String) -> Unit
 ) {
     val collections = listOf(
-        CollectionItem("Work", 12, Icons.Default.Folder, Color(0xFF059669), Color(0xFFD1FAE5)), // Emerald
-        CollectionItem("Study", 8, Icons.Default.School, Color(0xFF65A30D), Color(0xFFECFCCB)), // Lime
-        CollectionItem("Personal", 24, Icons.Default.Home, Color(0xFF0D9488), Color(0xFFCCFBF1)), // Teal
-        CollectionItem("Travel", 5, Icons.Default.Flight, Color(0xFF16A34A), Color(0xFFDCFCE7)), // Green
-        CollectionItem("Research", 19, Icons.Default.Science, Color(0xFF84CC16), Color(0xFFF7FEE7)), // Light Lime
-        CollectionItem("Shopping", 3, Icons.Default.ShoppingCart, Color(0xFF10B981), Color(0xFFD1FAE5)) // Green variation
+        CollectionItem("Work", 12, Icons.Default.Folder, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer), // Emerald
+        CollectionItem("Study", 8, Icons.Default.School, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.primaryContainer), // Lime
+        CollectionItem("Personal", 24, Icons.Default.Home, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer), // Teal
+        CollectionItem("Travel", 5, Icons.Default.Flight, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer), // Green
+        CollectionItem("Research", 19, Icons.Default.Science, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.primaryContainer), // Light Lime
+        CollectionItem("Shopping", 3, Icons.Default.ShoppingCart, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer) // Green variation
     )
 
     Scaffold(

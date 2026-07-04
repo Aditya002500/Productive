@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,8 +43,8 @@ fun SplashScreen(onTimeout: () -> Unit) {
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFF8FAFC),
-                        Color(0xFFECEEF0)
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
             ),
@@ -118,7 +117,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
             Text(
                 text = "Powered by Screenshot Intelligence",
                 style = MaterialTheme.typography.labelMedium.copy(
-                    color = Color(0xFF6B7280),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
                 )
             )

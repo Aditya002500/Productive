@@ -1,15 +1,54 @@
 package com.example.ui
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
+import com.example.data.ai.AiService
+import com.example.data.ai.OcrService
 import com.example.data.repository.AppRepository
+import com.example.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: AppRepository
+    private val settingsRepository = SettingsRepository(application)
+    private val ocrService = OcrService()
+    private val aiService = AiService()
+
+    // Settings state flows
+    val themeMode: StateFlow<ThemeMode> = settingsRepository.themeMode.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ThemeMode.SYSTEM
+    )
+    val notificationsEnabled: StateFlow<Boolean> = settingsRepository.notificationsEnabled.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+    val onDeviceAiEnabled: StateFlow<Boolean> = settingsRepository.onDeviceAiEnabled.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+    val cloudAiEnabled: StateFlow<Boolean> = settingsRepository.cloudAiEnabled.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+    val analyticsEnabled: StateFlow<Boolean> = settingsRepository.analyticsEnabled.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+    val consentGiven: StateFlow<Boolean> = settingsRepository.consentGiven.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
 
     // Database state flows
     val tasks: StateFlow<List<TaskEntity>>
@@ -277,7 +316,198 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Real capture pipeline: on-device OCR -> text-only cloud AI enrichment ->
+     * persist an editable CaptureEntity. The original image URI and raw OCR text
+     * are always preserved. Falls back gracefully if OCR or AI fail.
+     */
+    fun importAndProcess(imageUri: Uri, sourceType: String = "imported image") {
+        viewModelScope.launch {
+            _isAnalyzing.value = true
+            _analysisSuccess.value = null
+
+            val context = getApplication<Application>().applicationContext
+
+            // 0) Respect the user's on-device processing preference (AI & Privacy settings).
+            if (!onDeviceAiEnabled.value) {
+                repository.insertCapture(
+                    CaptureEntity(
+                        title = "Imported image",
+                        timestamp = "Just now",
+                        imageUrl = imageUri.toString(),
+                        category = "Other",
+                        status = "Needs Review",
+                        sourceType = sourceType,
+                        confidence = 0f
+                    )
+                )
+                _analysisSuccess.value = "On-device processing is off — saved to inbox for manual review."
+                _isAnalyzing.value = false
+                return@launch
+            }
+
+            // 1) OCR (on-device, free, private)
+            val ocr = try {
+                ocrService.extract(context, imageUri)
+            } catch (e: Exception) {
+                null
+            }
+
+            if (ocr == null) {
+                // Could not even open/scan the image — record a failed capture.
+                repository.insertCapture(
+                    CaptureEntity(
+                        title = "Imported image",
+                        timestamp = "Just now",
+                        imageUrl = imageUri.toString(),
+                        category = "Other",
+                        status = "Failed OCR",
+                        sourceType = sourceType,
+                        confidence = 0f
+                    )
+                )
+                _analysisSuccess.value = "Couldn't read that image — saved for manual review."
+                _isAnalyzing.value = false
+                return@launch
+            }
+
+            // 2) AI enrichment (text-only; never sends the image). Only calls the
+            // cloud model if the user has cloud AI enabled; otherwise stays fully
+            // on-device with a local best-effort analysis.
+            val analysis = if (cloudAiEnabled.value) {
+                aiService.analyze(ocr.text)
+            } else {
+                aiService.localOnlyAnalysis(ocr.text)
+            }
+
+            // Combine OCR + AI confidence; low either way => Needs Review.
+            val combinedConfidence = minOf(ocr.confidence, if (analysis.confidence > 0f) analysis.confidence else ocr.confidence)
+            val status = when {
+                ocr.text.isBlank() -> "Failed OCR"
+                analysis.needsReview || combinedConfidence < 0.5f -> "Needs Review"
+                else -> "Processed"
+            }
+
+            // 3) Persist an editable record.
+            repository.insertCapture(
+                CaptureEntity(
+                    title = analysis.title,
+                    timestamp = "Just now",
+                    imageUrl = imageUri.toString(),
+                    category = analysis.category,
+                    extractedText = ocr.text,
+                    status = status,
+                    summary = analysis.summary,
+                    aiTitle = analysis.title,
+                    detectedLanguage = analysis.language,
+                    tags = analysis.tags.joinToString(", "),
+                    entities = analysis.entitiesJson,
+                    confidence = combinedConfidence,
+                    sourceType = sourceType
+                )
+            )
+
+            _analysisSuccess.value = when (status) {
+                "Failed OCR" -> "No readable text found — saved to inbox."
+                "Needs Review" -> "Imported '${analysis.title}' — needs a quick review."
+                else -> "Imported & organized '${analysis.title}'."
+            }
+            _isAnalyzing.value = false
+        }
+    }
+
+    /** Persist user edits to any capture field, keeping AI outputs editable. */
+    fun updateCapture(
+        capture: CaptureEntity,
+        title: String = capture.title,
+        summary: String = capture.summary,
+        category: String = capture.category,
+        extractedText: String = capture.extractedText,
+        tags: String = capture.tags,
+        status: String = capture.status,
+        isImportant: Boolean = capture.isImportant
+    ) {
+        viewModelScope.launch {
+            repository.updateCapture(
+                capture.copy(
+                    title = title,
+                    summary = summary,
+                    category = category,
+                    extractedText = extractedText,
+                    tags = tags,
+                    status = status,
+                    isImportant = isImportant
+                )
+            )
+        }
+    }
+
+    /** Re-run the AI enrichment on already-extracted text (e.g. after OCR edits). */
+    fun reanalyzeCapture(captureId: Int) {
+        viewModelScope.launch {
+            val capture = repository.getCaptureById(captureId) ?: return@launch
+            _isAnalyzing.value = true
+            val analysis = if (cloudAiEnabled.value) {
+                aiService.analyze(capture.extractedText)
+            } else {
+                aiService.localOnlyAnalysis(capture.extractedText)
+            }
+            repository.updateCapture(
+                capture.copy(
+                    title = capture.title.ifBlank { analysis.title },
+                    summary = analysis.summary,
+                    category = analysis.category,
+                    tags = analysis.tags.joinToString(", "),
+                    entities = analysis.entitiesJson,
+                    detectedLanguage = analysis.language,
+                    confidence = analysis.confidence,
+                    status = if (analysis.needsReview) "Needs Review" else "Processed"
+                )
+            )
+            _isAnalyzing.value = false
+            _analysisSuccess.value = "Re-analyzed with AI."
+        }
+    }
+
+    fun deleteCapture(capture: CaptureEntity) {
+        viewModelScope.launch { repository.deleteCapture(capture) }
+    }
+
     fun clearAnalysisSuccess() {
         _analysisSuccess.value = null
+    }
+
+    // Settings operations
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { settingsRepository.setThemeMode(mode) }
+    }
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setNotificationsEnabled(enabled) }
+    }
+
+    fun setOnDeviceAiEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setOnDeviceAiEnabled(enabled) }
+    }
+
+    fun setCloudAiEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setCloudAiEnabled(enabled) }
+    }
+
+    fun setAnalyticsEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setAnalyticsEnabled(enabled) }
+    }
+
+    fun setConsentGiven(given: Boolean) {
+        viewModelScope.launch { settingsRepository.setConsentGiven(given) }
+    }
+
+    /**
+     * Erases all locally-stored personal data (captures, notes, tasks) to satisfy
+     * the DPDP Act's user-facing erasure requirement. Settings/consent state is
+     * preserved so re-consent isn't forced immediately after.
+     */
+    fun eraseAllData() {
+        viewModelScope.launch { repository.eraseAllUserData() }
     }
 }

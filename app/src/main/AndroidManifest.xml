@@ -2,6 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+      Media access. The manual-import flow uses the Android Photo Picker
+      (ActivityResultContracts.PickVisualMedia) and the share-sheet target,
+      neither of which needs ANY runtime permission. READ_MEDIA_IMAGES /
+      READ_MEDIA_VISUAL_USER_SELECTED are intentionally NOT declared here:
+      Google Play's Photo and Video Permissions policy requires a Play Console
+      declaration form to justify broad media access, and this app has no
+      feature that uses it yet (no background auto-detect scanning). Add these
+      back — with the matching Play Console declaration — only when that
+      feature is actually implemented.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,6 +34,13 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Share-sheet target: receive a single image shared from other apps. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
     </application>

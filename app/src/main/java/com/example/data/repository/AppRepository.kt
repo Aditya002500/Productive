@@ -36,13 +36,26 @@ class AppRepository(private val appDao: AppDao) {
 
     suspend fun deleteNote(note: NoteEntity) = appDao.deleteNote(note)
 
-    suspend fun insertCapture(capture: CaptureEntity) = appDao.insertCapture(capture)
+    suspend fun insertCapture(capture: CaptureEntity): Long = appDao.insertCapture(capture)
+
+    suspend fun getCaptureById(id: Int): CaptureEntity? = appDao.getCaptureById(id)
+
+    suspend fun updateCapture(capture: CaptureEntity) = appDao.updateCapture(capture)
 
     suspend fun deleteCapture(capture: CaptureEntity) = appDao.deleteCapture(capture)
 
     suspend fun insertEvent(event: EventEntity) = appDao.insertEvent(event)
 
     suspend fun deleteEvent(event: EventEntity) = appDao.deleteEvent(event)
+
+    /** DPDP Act right-to-erasure: wipes all locally stored personal data. */
+    suspend fun eraseAllUserData() {
+        appDao.clearAllSubTasks()
+        appDao.clearAllTasks()
+        appDao.clearAllNotes()
+        appDao.clearAllCaptures()
+        appDao.clearAllEvents()
+    }
 
     suspend fun prepopulateIfEmpty() {
         // Check if database is empty (using tasks as a proxy)

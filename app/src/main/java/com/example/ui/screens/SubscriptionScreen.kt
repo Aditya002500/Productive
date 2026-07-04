@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,7 +52,7 @@ fun SubscriptionScreen(
             Icon(
                 Icons.Default.Star, 
                 contentDescription = null, 
-                tint = Color(0xFFF59E0B), 
+                tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.size(64.dp)
             )
 
@@ -69,7 +68,7 @@ fun SubscriptionScreen(
             Text(
                 "Get unlimited AI captures, advanced OCR, and cross-device sync.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp)
             )
@@ -91,7 +90,7 @@ fun SubscriptionScreen(
                     Text("Pro Plan", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text("$4.99", fontWeight = FontWeight.Bold, fontSize = 40.sp)
-                        Text("/mo", color = Color.Gray, modifier = Modifier.padding(bottom = 6.dp))
+                        Text("/mo", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 6.dp))
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -120,7 +119,7 @@ fun SubscriptionScreen(
                 onClick = { /* TODO */ },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
-                Text("Restore Purchases", color = Color.Gray)
+                Text("Restore Purchases", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             
             Spacer(modifier = Modifier.height(32.dp))

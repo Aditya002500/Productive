@@ -31,14 +31,15 @@ import coil.compose.AsyncImage
 
 @Composable
 fun OnboardingFlow(
-    onComplete: () -> Unit
+    onComplete: () -> Unit,
+    onConsentGiven: (Boolean) -> Unit = {}
 ) {
     var step by remember { mutableStateOf(1) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F9FB))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         AnimatedVisibility(
             visible = step == 1,
@@ -61,8 +62,163 @@ fun OnboardingFlow(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            OnboardingStepThree(onContinue = onComplete)
+            OnboardingStepThree(onContinue = { step = 4 })
         }
+
+        AnimatedVisibility(
+            visible = step == 4,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            ConsentStepFour(
+                onAccept = {
+                    onConsentGiven(true)
+                    onComplete()
+                }
+            )
+        }
+    }
+}
+
+// STEP 4: DPDP Act consent — explicit, plain-language, unbundled from the rest
+// of onboarding. Per the PRD's compliance requirements (India DPDP Act
+// 2023/Rules 2025), this consent must be clear, not pre-checked, and not a
+// condition of using unrelated parts of the app — so only the AI/screenshot
+// processing itself is gated on it (see AiPrivacyScreen for withdrawal).
+@Composable
+fun ConsentStepFour(onAccept: () -> Unit) {
+    var consentChecked by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PrivacyTip,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Your data, your control",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                ),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Before we process any screenshot, here's exactly what happens to it:",
+                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(max = 320.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ConsentPoint(
+                    icon = Icons.Default.PhoneAndroid,
+                    text = "Text is extracted from your screenshot on-device — the image itself never leaves your phone."
+                )
+                ConsentPoint(
+                    icon = Icons.Default.CloudQueue,
+                    text = "Only the extracted text (never the image) may be sent to our AI provider for summarizing and categorizing — you can turn this off anytime in AI & Privacy settings."
+                )
+                ConsentPoint(
+                    icon = Icons.Default.Gavel,
+                    text = "You can access, correct, export, or permanently erase your data at any time, and withdraw this consent, from Settings → AI & Privacy."
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                    .clickable { consentChecked = !consentChecked }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = consentChecked, onCheckedChange = { consentChecked = it })
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "I understand and consent to my screenshot text being processed as described above, in line with the DPDP Act, 2023.",
+                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+            }
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+        ) {
+            Button(
+                onClick = onAccept,
+                enabled = consentChecked,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .widthIn(max = 320.dp)
+                    .testTag("consent_accept_button"),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Text(
+                    text = "Accept & Continue",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun ConsentPoint(icon: ImageVector, text: String) {
+    Row(verticalAlignment = Alignment.Top) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+        )
     }
 }
 
@@ -84,7 +240,7 @@ fun OnboardingStepOne(onNext: () -> Unit) {
                 .fillMaxWidth()
                 .height(240.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFFECEEF0)),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             AsyncImage(
@@ -112,7 +268,7 @@ fun OnboardingStepOne(onNext: () -> Unit) {
 
         Text(
             text = "Transform your raw captures into structured, actionable intelligence automatically.",
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF4B5563)),
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -184,14 +340,14 @@ fun OnboardingStepOne(onNext: () -> Unit) {
                     text = "Next",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Arrow Forward",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -217,7 +373,7 @@ fun PermissionsStepTwo(onAllowAll: () -> Unit, onCustomize: () -> Unit) {
                 text = "Permissions",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF191C1E)
+                    color = MaterialTheme.colorScheme.onBackground
                 ),
                 textAlign = TextAlign.Center
             )
@@ -227,7 +383,7 @@ fun PermissionsStepTwo(onAllowAll: () -> Unit, onCustomize: () -> Unit) {
             Text(
                 text = "To provide the best AI-powered experience, we need a few permissions.",
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color(0xFF3B494A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 24.sp
                 ),
                 textAlign = TextAlign.Center,
@@ -245,8 +401,8 @@ fun PermissionsStepTwo(onAllowAll: () -> Unit, onCustomize: () -> Unit) {
                     icon = Icons.Default.Image,
                     iconBg = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f),
                     iconTint = MaterialTheme.colorScheme.secondary,
-                    title = "Gallery Access",
-                    desc = "To analyze and organize your screenshots automatically."
+                    title = "Photo Picker",
+                    desc = "Pick individual screenshots to import — the system picker never shares your full gallery with the app."
                 )
 
                 PermissionRowCard(
@@ -287,7 +443,7 @@ fun PermissionsStepTwo(onAllowAll: () -> Unit, onCustomize: () -> Unit) {
                     text = "Allow All",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 )
             }
@@ -350,18 +506,18 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
                             text = "Today, 24 Oct",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF3B494A)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Box(modifier = Modifier.size(6.dp).background(MaterialTheme.colorScheme.primary, CircleShape))
-                            Box(modifier = Modifier.size(6.dp).background(Color(0xFFBAC9C9), CircleShape))
-                            Box(modifier = Modifier.size(6.dp).background(Color(0xFFBAC9C9), CircleShape))
+                            Box(modifier = Modifier.size(6.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape))
+                            Box(modifier = Modifier.size(6.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape))
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
-                    HorizontalDivider(color = Color(0xFFF2F4F6), thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Simulated schedule grid slots
@@ -373,9 +529,9 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Box(modifier = Modifier.size(width = 80.dp, height = 6.dp).background(Color(0xFF191C1E), RoundedCornerShape(3.dp)))
+                                Box(modifier = Modifier.size(width = 80.dp, height = 6.dp).background(MaterialTheme.colorScheme.onSurface, RoundedCornerShape(3.dp)))
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Box(modifier = Modifier.size(width = 40.dp, height = 4.dp).background(Color(0xFFBAC9C9), RoundedCornerShape(2.dp)))
+                                Box(modifier = Modifier.size(width = 40.dp, height = 4.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(2.dp)))
                             }
                         }
 
@@ -403,15 +559,15 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFFECEEF0).copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                                 .padding(12.dp)
                         ) {
                             Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Box(modifier = Modifier.size(width = 100.dp, height = 6.dp).background(Color(0xFF191C1E), RoundedCornerShape(3.dp)))
+                                Box(modifier = Modifier.size(width = 100.dp, height = 6.dp).background(MaterialTheme.colorScheme.onSurface, RoundedCornerShape(3.dp)))
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Box(modifier = Modifier.size(width = 50.dp, height = 4.dp).background(Color(0xFFBAC9C9), RoundedCornerShape(2.dp)))
+                                Box(modifier = Modifier.size(width = 50.dp, height = 4.dp).background(MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(2.dp)))
                             }
                         }
                     }
@@ -424,7 +580,7 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
                 text = "Your entire day,\nunified.",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF191C1E),
+                    color = MaterialTheme.colorScheme.onBackground,
                     lineHeight = 40.sp,
                     letterSpacing = (-0.02).sp
                 ),
@@ -436,7 +592,7 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
             Text(
                 text = "Connect your calendar and let CaptureFlow fill the gaps with tasks and notes extracted from your screenshots.",
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color(0xFF4B5563),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 24.sp
                 ),
                 textAlign = TextAlign.Center,
@@ -469,14 +625,14 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
                         text = "Continue",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = "Arrow Forward",
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -526,14 +682,14 @@ fun FeatureCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF191C1E)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = desc,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color(0xFF4B5563),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 16.sp
                     )
                 )
@@ -583,14 +739,14 @@ fun PermissionRowCard(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF191C1E)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = desc,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color(0xFF4B5563),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 20.sp
                     )
                 )

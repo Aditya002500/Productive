@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.AppViewModel
 import com.example.ui.components.EmptyStateView
+import com.example.ui.theme.accents
 
 data class NotificationItem(
     val id: Int,
@@ -41,9 +42,9 @@ fun NotificationScreen(
     onBack: () -> Unit
 ) {
     val dummyNotifications = listOf(
-        NotificationItem(1, "Subscription Expiring", "Your Pro trial ends in 2 days.", "2h ago", Icons.Default.Warning, true, Color(0xFFF59E0B)),
-        NotificationItem(2, "Task Reminder", "Project Deadline is approaching.", "4h ago", Icons.Default.NotificationsActive, true, Color(0xFF059669)),
-        NotificationItem(3, "New Feature", "Check out the new AI Summary capabilities!", "1d ago", Icons.Default.Info, false, Color(0xFF0D9488))
+        NotificationItem(1, "Subscription Expiring", "Your Pro trial ends in 2 days.", "2h ago", Icons.Default.Warning, true, MaterialTheme.accents.warning),
+        NotificationItem(2, "Task Reminder", "Project Deadline is approaching.", "4h ago", Icons.Default.NotificationsActive, true, MaterialTheme.colorScheme.primary),
+        NotificationItem(3, "New Feature", "Check out the new AI Summary capabilities!", "1d ago", Icons.Default.Info, false, MaterialTheme.colorScheme.primary)
     )
 
     Scaffold(
@@ -112,14 +113,14 @@ fun NotificationRow(notification: NotificationItem) {
                 Text(
                     text = notification.time,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = notification.description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (notification.isUnread) MaterialTheme.colorScheme.onBackground else Color.Gray
+                color = if (notification.isUnread) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         if (notification.isUnread) {

@@ -1,78 +1,150 @@
 package com.example.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Colors strictly from DESIGN.md and DESIGN_Dark.md
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF37e1e6),
-    onPrimary = Color(0xFFffffff),
-    primaryContainer = Color(0xFF006063),
-    onPrimaryContainer = Color(0xFF37e1e6),
-    background = Color(0xFF191c1e), // on-surface from light is background for dark
-    onBackground = Color(0xFFeff1f3),
-    surface = Color(0xFF2d3133), // inverse-surface
-    onSurface = Color(0xFFeff1f3),
-    surfaceVariant = Color(0xFF3b494a),
-    onSurfaceVariant = Color(0xFFbac9c9),
-    error = Color(0xFFffdad6),
-    onError = Color(0xFF93000a)
+/**
+ * The three theme modes surfaced in Settings. Persisted via DataStore
+ * (see [com.example.data.SettingsRepository]).
+ */
+enum class ThemeMode { SYSTEM, LIGHT, DARK }
+
+/**
+ * Semantic accents that aren't part of the Material3 color scheme but still
+ * need to flip between light and dark. Read via [LocalAppAccents].
+ */
+data class AppAccents(
+    val success: Color,
+    val warning: Color,
+    val info: Color
 )
 
+val LocalAppAccents = staticCompositionLocalOf {
+    AppAccents(success = SuccessLight, warning = WarningLight, info = InfoLight)
+}
+
+/** Convenience accessor: `MaterialTheme.accents` mirrors `MaterialTheme.colorScheme`. */
+val MaterialTheme.accents: AppAccents
+    @Composable get() = LocalAppAccents.current
+
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF00696c),
-    onPrimary = Color(0xFFffffff),
-    primaryContainer = Color(0xFF37e1e6),
-    onPrimaryContainer = Color(0xFF006063),
-    background = Color(0xFFf7f9fb),
-    onBackground = Color(0xFF191c1e),
-    surface = Color(0xFFffffff), // surface-container-lowest
-    onSurface = Color(0xFF191c1e),
-    surfaceVariant = Color(0xFFe0e3e5), // surface-variant
-    onSurfaceVariant = Color(0xFF3b494a),
-    error = Color(0xFFba1a1a),
-    onError = Color(0xFFffffff)
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    primaryContainer = LightPrimaryContainer,
+    onPrimaryContainer = LightOnPrimaryContainer,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
+    tertiary = LightTertiary,
+    onTertiary = LightOnTertiary,
+    tertiaryContainer = LightTertiaryContainer,
+    onTertiaryContainer = LightOnTertiaryContainer,
+    background = LightBackground,
+    onBackground = LightOnBackground,
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    surfaceVariant = LightSurfaceVariant,
+    onSurfaceVariant = LightOnSurfaceVariant,
+    surfaceContainerLowest = LightSurfaceContainerLowest,
+    surfaceContainerLow = LightSurfaceContainerLow,
+    surfaceContainer = LightSurfaceContainer,
+    surfaceContainerHigh = LightSurfaceContainerHigh,
+    surfaceContainerHighest = LightSurfaceContainerHighest,
+    outline = LightOutline,
+    outlineVariant = LightOutlineVariant,
+    inverseSurface = LightInverseSurface,
+    inverseOnSurface = LightInverseOnSurface,
+    inversePrimary = LightInversePrimary,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    surfaceTint = LightPrimary
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimaryContainer,
+    onPrimaryContainer = DarkOnPrimaryContainer,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = DarkOnSecondaryContainer,
+    tertiary = DarkTertiary,
+    onTertiary = DarkOnTertiary,
+    tertiaryContainer = DarkTertiaryContainer,
+    onTertiaryContainer = DarkOnTertiaryContainer,
+    background = DarkBackground,
+    onBackground = DarkOnBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    surfaceContainerLowest = DarkSurfaceContainerLowest,
+    surfaceContainerLow = DarkSurfaceContainerLow,
+    surfaceContainer = DarkSurfaceContainer,
+    surfaceContainerHigh = DarkSurfaceContainerHigh,
+    surfaceContainerHighest = DarkSurfaceContainerHighest,
+    outline = DarkOutline,
+    outlineVariant = DarkOutlineVariant,
+    inverseSurface = DarkInverseSurface,
+    inverseOnSurface = DarkInverseOnSurface,
+    inversePrimary = DarkInversePrimary,
+    error = DarkError,
+    onError = DarkOnError,
+    errorContainer = DarkErrorContainer,
+    onErrorContainer = DarkOnErrorContainer,
+    surfaceTint = DarkPrimary
 )
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
     }
+
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val appAccents = if (darkTheme) {
+        AppAccents(success = SuccessDark, warning = WarningDark, info = InfoDark)
+    } else {
+        AppAccents(success = SuccessLight, warning = WarningLight, info = InfoLight)
+    }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+            val insets = WindowCompat.getInsetsController(window, view)
+            insets.isAppearanceLightStatusBars = !darkTheme
+            insets.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    CompositionLocalProvider(LocalAppAccents provides appAccents) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

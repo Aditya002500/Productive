@@ -101,21 +101,21 @@ fun TaskDetailScreen(
                 Box(
                     modifier = Modifier
                         .background(
-                            if (task.priority == "High") Color(0xFFFFDAD6) else Color(0xFFECEEF0),
+                            if (task.priority == "High") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
                             RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (task.priority == "High") {
-                            Icon(Icons.Default.PriorityHigh, contentDescription = null, tint = Color(0xFF93000A), modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.PriorityHigh, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                         Text(
                             text = "${task.priority} Priority",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = if (task.priority == "High") Color(0xFF93000A) else Color(0xFF3B494A)
+                                color = if (task.priority == "High") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
                     }
@@ -123,7 +123,7 @@ fun TaskDetailScreen(
 
                 Text(
                     text = "${task.dueDate} at ${task.dueTime}",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF6B7280), fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 )
             }
 
@@ -132,7 +132,7 @@ fun TaskDetailScreen(
                 text = task.title,
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF191C1E)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
 
@@ -168,13 +168,13 @@ fun TaskDetailScreen(
                                 )
                                 .border(
                                     2.dp,
-                                    if (sub.isCompleted) MaterialTheme.colorScheme.primary else Color(0xFFBAC9C9),
+                                    if (sub.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     CircleShape
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             if (sub.isCompleted) {
-                                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
                             }
                         }
 
@@ -183,7 +183,7 @@ fun TaskDetailScreen(
                         Text(
                             text = sub.title,
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                color = if (sub.isCompleted) Color.Gray else Color(0xFF191C1E)
+                                color = if (sub.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }
@@ -268,7 +268,7 @@ fun TaskDetailScreen(
                         text = "competitor_dashboard_v2.png",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF191C1E)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }

@@ -24,6 +24,18 @@ interface AppDao {
     @Query("DELETE FROM tasks")
     suspend fun clearAllTasks()
 
+    @Query("DELETE FROM notes")
+    suspend fun clearAllNotes()
+
+    @Query("DELETE FROM captures")
+    suspend fun clearAllCaptures()
+
+    @Query("DELETE FROM events")
+    suspend fun clearAllEvents()
+
+    @Query("DELETE FROM sub_tasks")
+    suspend fun clearAllSubTasks()
+
     // Sub-tasks
     @Query("SELECT * FROM sub_tasks WHERE taskId = :taskId ORDER BY id ASC")
     fun getSubTasksForTaskFlow(taskId: Int): Flow<List<SubTaskEntity>>
@@ -57,8 +69,14 @@ interface AppDao {
     @Query("SELECT * FROM captures ORDER BY id DESC")
     fun getAllCapturesFlow(): Flow<List<CaptureEntity>>
 
+    @Query("SELECT * FROM captures WHERE id = :id")
+    suspend fun getCaptureById(id: Int): CaptureEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCapture(capture: CaptureEntity)
+    suspend fun insertCapture(capture: CaptureEntity): Long
+
+    @Update
+    suspend fun updateCapture(capture: CaptureEntity)
 
     @Delete
     suspend fun deleteCapture(capture: CaptureEntity)

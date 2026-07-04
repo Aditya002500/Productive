@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,7 +36,7 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -75,7 +74,7 @@ fun RegisterScreen(
 
             Text(
                 text = "Start your journey to effortless productivity.",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF4B5563))
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -86,7 +85,7 @@ fun RegisterScreen(
                     text = "FULL NAME",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4B5563),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 1.sp
                     ),
                     modifier = Modifier.padding(bottom = 6.dp)
@@ -95,14 +94,14 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it; showError = "" },
-                    placeholder = { Text("John Doe", color = Color(0xFF9CA3AF)) },
+                    placeholder = { Text("John Doe", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("register_fullname_input"),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color(0xFFE5E7EB)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     ),
                     singleLine = true
                 )
@@ -116,7 +115,7 @@ fun RegisterScreen(
                     text = "EMAIL",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4B5563),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 1.sp
                     ),
                     modifier = Modifier.padding(bottom = 6.dp)
@@ -125,14 +124,14 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it; showError = "" },
-                    placeholder = { Text("you@example.com", color = Color(0xFF9CA3AF)) },
+                    placeholder = { Text("you@example.com", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("register_email_input"),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color(0xFFE5E7EB)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     ),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
@@ -147,7 +146,7 @@ fun RegisterScreen(
                     text = "PASSWORD",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4B5563),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 1.sp
                     ),
                     modifier = Modifier.padding(bottom = 6.dp)
@@ -156,14 +155,14 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it; showError = "" },
-                    placeholder = { Text("••••••••", color = Color(0xFF9CA3AF)) },
+                    placeholder = { Text("••••••••", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("register_password_input"),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color(0xFFE5E7EB)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     ),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -179,7 +178,7 @@ fun RegisterScreen(
                     text = "CONFIRM PASSWORD",
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF4B5563),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 1.sp
                     ),
                     modifier = Modifier.padding(bottom = 6.dp)
@@ -188,14 +187,14 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it; showError = "" },
-                    placeholder = { Text("••••••••", color = Color(0xFF9CA3AF)) },
+                    placeholder = { Text("••••••••", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("register_confirm_password_input"),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color(0xFFE5E7EB)
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     ),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -257,7 +256,7 @@ fun RegisterScreen(
             ) {
                 Text(
                     text = "Already have an account? ",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF4B5563))
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
                 TextButton(
                     onClick = onNavigateToLogin,
