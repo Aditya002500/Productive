@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>CaptureFlow - OCR Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#2cdbe0",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-container": "#55e4a8",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#004f51",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#59f8fd",
+                        "secondary-fixed": "#71f8e4",
+                        "on-surface": "#191c1e",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container": "#eceef0",
+                        "primary": "#00696c",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface": "#f7f9fb",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#005048",
+                        "on-primary-fixed": "#002021",
+                        "on-background": "#191c1e",
+                        "secondary-fixed-dim": "#4fdbc8",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-bright": "#f7f9fb",
+                        "primary-container": "#37e1e6",
+                        "on-secondary-container": "#006f64",
+                        "surface-tint": "#00696c",
+                        "on-primary-container": "#006063",
+                        "inverse-primary": "#2cdbe0",
+                        "secondary": "#006b5f",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary-container": "#006343",
+                        "secondary-container": "#6df5e1",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3b494a",
+                        "outline": "#6b7a7a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "outline-variant": "#bac9c9",
+                        "on-secondary-fixed": "#00201c",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006c49"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "2xl": "48px",
+                        "lg": "24px",
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "3xl": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .error-highlight {
+            position: relative;
+            background-color: rgba(255, 218, 214, 0.4);
+            border-bottom: 2px solid #ba1a1a;
+            padding: 0 2px;
+            margin: 0 -2px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .error-highlight:hover {
+            background-color: rgba(255, 218, 214, 0.8);
+        }
+        .text-editor:focus {
+            outline: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased flex flex-col h-screen overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (Transactional - Nav hidden) -->
+<header class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full sticky top-0 bg-surface dark:bg-on-background z-50">
+<button class="p-2 rounded-full hover:bg-surface-container-low active:scale-95 transition-transform duration-150 text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<div class="font-headline-sm text-headline-sm text-on-surface">OCR Review</div>
+<button class="p-2 rounded-full hover:bg-surface-container-low active:scale-95 transition-transform duration-150 text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">more_vert</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto pb-[100px]">
+<!-- Image Preview Area -->
+<div class="px-margin-mobile pt-sm pb-lg">
+<div class="relative w-full h-[240px] rounded-xl overflow-hidden shadow-[0px_4px_12px_rgba(0,0,0,0.05)] bg-surface-container-lowest">
+<img alt="Source Document" class="object-cover w-full h-full opacity-90" data-alt="A clean, high-resolution smartphone screenshot displaying a business document or email text, slightly angled in a modern presentation. The lighting is soft and neutral, typical of a bright light-mode application interface, emphasizing clarity and professionalism within a minimalistic design context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8aONb-lSkZOqeU1QbChBFxsFMMpg-L3QwDnvmyaEoh_v4tJhTFJJemFxlF19qvjUlc8ZzdnX8fhpz1NkCcjM7Z8VU9qNB7djakIwJWLaMAAff3l9A7zUsLsOvFlj11CPPghdEwT9RAr1L8dF-LY20rQ-kvgwH1yo_8Kc7JM_S5MyAPZ9JpenctDbWJxHlsN2ivvvGPpZ6gafMT2DqKgukj5_O2aO5a-kKvsAIL1FCvAqz8JcF44IH2aV3z8bbKQH2gW3Erw5AtyBc"/>
+<div class="absolute bottom-3 right-3 bg-surface-container-lowest/90 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-2 shadow-sm border border-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">crop</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Edit Crop</span>
+</div>
+</div>
+</div>
+<!-- Confidence Indicator -->
+<div class="px-margin-mobile flex justify-between items-center mb-md">
+<div class="font-headline-sm text-headline-sm text-on-surface">Extracted Text</div>
+<div class="flex items-center gap-1.5 bg-tertiary-container/20 text-on-tertiary-container px-2.5 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-label-md">98% Accuracy</span>
+</div>
+</div>
+<!-- Rich Text Editor Card -->
+<div class="px-margin-mobile">
+<div class="bg-surface-container-lowest rounded-xl p-lg shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-surface-variant/50">
+<!-- Editor Toolbar -->
+<div class="flex items-center gap-4 mb-md pb-md border-b border-surface-variant/50">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">format_bold</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">format_italic</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+</button>
+<div class="flex-1"></div>
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+</div>
+<!-- Editable Content -->
+<div class="text-editor font-body-lg text-body-lg text-on-surface leading-relaxed min-h-[200px]" contenteditable="true">
+                    The Q3 performance review indicates a significant uptick in <span class="error-highlight" title="Did you mean: regional?">reqional</span> engagement metrics across the primary demographics. We are seeing a sustained 14% growth in daily active usage, which correlates with the recent rollout of the new unified dashboard interface.
+                    <br/><br/>
+                    However, the retention curve for newly onboarded clients still shows a slight drop-off at the 14-day mark. The proposed solution involves implementing automated follow-up sequences to guide users through the more advanced configuration settings.
+                    <br/><br/>
+                    Budget allocations for Q4 will need to prioritize these retention <span class="error-highlight" title="Did you mean: initiatives?">iniciatives</span> alongside the scheduled backend infrastructure upgrades.
+                </div>
+</div>
+</div>
+<!-- Instructional Note -->
+<div class="px-margin-mobile mt-4 flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-error mt-0.5" style="font-variation-settings: 'FILL' 1;">error</span>
+<p class="font-body-md text-body-md text-on-surface-variant">Tap highlighted words to review suggested corrections.</p>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-md p-margin-mobile border-t border-surface-variant/30 pb-safe z-50">
+<button class="w-full bg-primary-container text-on-primary-container font-headline-sm text-headline-sm rounded-xl py-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check</span>
+            Accept Text
+        </button>
+</div>
+<script>
+        // Simple script to handle highlight clicks
+        document.querySelectorAll('.error-highlight').forEach(highlight => {
+            highlight.addEventListener('click', function(e) {
+                // Prevent contenteditable from absorbing the click completely
+                e.stopPropagation();
+                
+                // Extremely basic interaction just for UI feel
+                const isCorrected = this.dataset.corrected;
+                if (!isCorrected) {
+                    const originalText = this.innerText;
+                    const titleParts = this.title.split(': ');
+                    if (titleParts.length > 1) {
+                        const correction = titleParts[1].replace('?', '');
+                        this.innerText = correction;
+                        this.style.borderBottom = 'none';
+                        this.style.backgroundColor = 'rgba(55, 225, 230, 0.2)'; // primary-container with opacity
+                        this.dataset.corrected = "true";
+                        this.title = `Original: ${originalText}`;
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

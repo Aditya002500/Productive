@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>CaptureFlow - AI Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#2cdbe0",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-container": "#55e4a8",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#004f51",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#59f8fd",
+                        "secondary-fixed": "#71f8e4",
+                        "on-surface": "#191c1e",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container": "#eceef0",
+                        "primary": "#00696c",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface": "#f7f9fb",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#005048",
+                        "on-primary-fixed": "#002021",
+                        "on-background": "#191c1e",
+                        "secondary-fixed-dim": "#4fdbc8",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-bright": "#f7f9fb",
+                        "primary-container": "#37e1e6",
+                        "on-secondary-container": "#006f64",
+                        "surface-tint": "#00696c",
+                        "on-primary-container": "#006063",
+                        "inverse-primary": "#2cdbe0",
+                        "secondary": "#006b5f",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary-container": "#006343",
+                        "secondary-container": "#6df5e1",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3b494a",
+                        "outline": "#6b7a7a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "outline-variant": "#bac9c9",
+                        "on-secondary-fixed": "#00201c",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006c49"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "2xl": "48px",
+                        "lg": "24px",
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "3xl": "64px",
+                        "safe": "env(safe-area-inset-bottom, 20px)"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-sm": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "label-caps": ["Inter", "sans-serif"],
+                        "display-lg": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "display-lg-mobile": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb; /* Match background color */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .shimmer {
+            background: linear-gradient(
+                90deg,
+                rgba(55, 225, 230, 0) 0%,
+                rgba(55, 225, 230, 0.1) 50%,
+                rgba(55, 225, 230, 0) 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .action-card {
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+        }
+        .action-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-[100px]">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-on-background z-40">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full">
+<button aria-label="Menu" class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors active:scale-95 transition-transform duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight">CaptureFlow</h1>
+<button aria-label="Profile" class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors active:scale-95 transition-transform duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="px-margin-mobile md:px-margin-desktop pt-md pb-3xl flex flex-col gap-2xl max-w-3xl mx-auto">
+<!-- Source Context (Optional Visual) -->
+<div class="flex items-center gap-md text-on-surface-variant">
+<span class="material-symbols-outlined text-outline" data-icon="screenshot">screenshot</span>
+<span class="font-body-md text-body-md">Captured just now from Chrome</span>
+</div>
+<!-- AI Summary Card -->
+<section class="bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden relative">
+<!-- Subtle AI glowing edge -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-container via-tertiary-container to-secondary-container shimmer"></div>
+<div class="p-lg flex flex-col gap-md">
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined" data-icon="auto_awesome" data-weight="fill" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<h2 class="font-headline-sm text-headline-sm">Summary</h2>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+                    The screenshot contains details for a "Product Sync" meeting scheduled for next Tuesday at 10:00 AM PST. Key topics include Q3 roadmap review and finalizing the new design system components. Sarah mentioned needing access to the latest Figma files beforehand.
+                </p>
+<!-- Key Entities/Tags -->
+<div class="flex flex-wrap gap-sm pt-sm">
+<span class="bg-surface-container-low text-on-surface px-3 py-1 rounded-full font-label-md text-label-md">Meeting</span>
+<span class="bg-primary-container/20 text-on-primary-container px-3 py-1 rounded-full font-label-md text-label-md">Q3 Roadmap</span>
+<span class="bg-surface-container-low text-on-surface px-3 py-1 rounded-full font-label-md text-label-md">Figma</span>
+</div>
+</div>
+</section>
+<!-- Suggested Actions Grid -->
+<section class="flex flex-col gap-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Suggested Actions</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+<!-- Action 1 -->
+<button class="action-card flex items-center p-md bg-surface-container-lowest rounded-[12px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] gap-md text-left border border-transparent hover:border-surface-variant">
+<div class="bg-primary-container/10 text-primary p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface text-[16px]">Create Task</span>
+<span class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Share Figma files with Sarah</span>
+</div>
+<span class="material-symbols-outlined text-outline ml-auto" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Action 2 -->
+<button class="action-card flex items-center p-md bg-surface-container-lowest rounded-[12px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] gap-md text-left border border-transparent hover:border-surface-variant">
+<div class="bg-secondary-container/10 text-secondary p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface text-[16px]">Add Event</span>
+<span class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Product Sync (Tue, 10 AM)</span>
+</div>
+<span class="material-symbols-outlined text-outline ml-auto" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Action 3 -->
+<button class="action-card flex items-center p-md bg-surface-container-lowest rounded-[12px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] gap-md text-left border border-transparent hover:border-surface-variant">
+<div class="bg-tertiary-container/10 text-tertiary p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="note_add">note_add</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface text-[16px]">Create Note</span>
+<span class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Save Q3 roadmap details</span>
+</div>
+<span class="material-symbols-outlined text-outline ml-auto" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Action 4 -->
+<button class="action-card flex items-center p-md bg-surface-container-lowest rounded-[12px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] gap-md text-left border border-transparent hover:border-surface-variant">
+<div class="bg-surface-container-high text-on-surface p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="alarm_add">alarm_add</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface text-[16px]">Add Reminder</span>
+<span class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Prep for meeting</span>
+</div>
+<span class="material-symbols-outlined text-outline ml-auto" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Original Image Reference (Collapsed by default, simple visual indicator) -->
+<div class="mt-md flex justify-center">
+<button class="text-primary font-label-caps text-label-caps uppercase flex items-center gap-xs hover:bg-surface-container-low px-4 py-2 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="image">image</span>
+                View Original Screenshot
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 pb-safe px-4 bg-surface-container-lowest dark:bg-inverse-surface shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] shadow-md rounded-t-xl z-50 md:hidden">
+<!-- Tasks -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="check_circle">check_circle</span>
+<span class="font-label-md text-label-md mt-1">Tasks</span>
+</a>
+<!-- Notes -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="description">description</span>
+<span class="font-label-md text-label-md mt-1">Notes</span>
+</a>
+<!-- Schedule -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-md text-label-md mt-1">Schedule</span>
+</a>
+<!-- AI Organise (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-5 py-1 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome" data-weight="fill" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-md text-label-md mt-1 font-semibold">AI Organise</span>
+</a>
+</nav>
+<script>
+        // Simple interaction for action cards to show a quick state change
+        document.querySelectorAll('.action-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const icon = this.querySelector('.material-symbols-outlined:last-child');
+                const originalIcon = icon.getAttribute('data-icon');
+                
+                // Visual feedback
+                this.classList.add('bg-surface-container-low');
+                icon.textContent = 'check';
+                icon.classList.remove('text-outline');
+                icon.classList.add('text-primary');
+                
+                setTimeout(() => {
+                    this.classList.remove('bg-surface-container-low');
+                    icon.textContent = originalIcon;
+                    icon.classList.add('text-outline');
+                    icon.classList.remove('text-primary');
+                }, 500);
+            });
+        });
+    </script>
+</body></html>

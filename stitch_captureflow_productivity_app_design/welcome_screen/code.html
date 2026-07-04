@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Welcome to CaptureFlow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-dim": "#d8dadc", "surface-container-high": "#e6e8ea", "surface-container-lowest": "#ffffff", "secondary-fixed": "#71f8e4", "surface-container-low": "#f2f4f6", "on-primary-container": "#4ff1f6", "surface-variant": "#e0e3e5", "primary-container": "#006b6e", "surface-tint": "#00696c", "primary-fixed": "#59f8fd", "on-primary-fixed": "#002021", "tertiary-container": "#006e4b", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#4edea3", "surface-container-highest": "#e0e3e5", primary: "#005153", "tertiary-fixed": "#6ffbbe", "secondary-fixed-dim": "#4fdbc8", "on-error-container": "#93000a", "on-secondary-fixed": "#00201c", "on-surface": "#191c1e", "outline-variant": "#c7c4d8", "on-error": "#ffffff", "on-background": "#191c1e", "inverse-surface": "#2d3133", "on-primary-fixed-variant": "#004f51", "secondary-container": "#6df5e1", "primary-fixed-dim": "#2cdbe0", "on-tertiary-container": "#67f4b7", "on-primary": "#ffffff", "error-container": "#ffdad6", "on-tertiary-fixed": "#002113", error: "#ba1a1a", "on-tertiary-fixed-variant": "#005236", outline: "#777587", "on-secondary": "#ffffff", "inverse-primary": "#2cdbe0", "on-secondary-fixed-variant": "#005048", secondary: "#006b5f", surface: "#f7f9fb", "surface-bright": "#f7f9fb", "inverse-on-surface": "#eff1f3", "on-secondary-container": "#006f64", "surface-container": "#eceef0", background: "#f7f9fb", "on-surface-variant": "#464555", tertiary: "#005338"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {sm: "8px", md: "16px", base: "8px", "2xl": "48px", xs: "4px", "margin-desktop": "32px", "margin-mobile": "16px", lg: "24px", gutter: "16px", "3xl": "64px", xl: "32px"}, fontFamily: {"display-lg-mobile": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "label-caps": ["Inter"], "body-md": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"display-lg-mobile": ["28px", {lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-lg": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-caps": ["11px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-sm": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["12px", {lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500"}]}}}};</script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- TopAppBar (Transactional - Hidden or Minimal) -->
+<!-- Suppressed full navigation shell for Welcome Screen as per rules -->
+<header class="flex justify-between items-center px-margin-mobile h-16 z-50 bg-transparent absolute top-0 w-full">
+<div class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">
+            CaptureFlow
+        </div>
+</header>
+<main class="flex-grow flex flex-col justify-center items-center px-margin-mobile pt-2xl pb-3xl w-full max-w-md mx-auto">
+<!-- Hero Illustration Area -->
+<div class="w-full flex justify-center mb-xl relative">
+<!-- Utilizing the provided image placeholder -->
+<div class="relative w-full max-w-[320px] aspect-[3/4] flex items-center justify-center">
+<img alt="Hero Illustration" class="w-full h-auto object-contain drop-shadow-2xl opacity-90 transition-transform hover:scale-105 duration-500 ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5VCgNOGLx6w8GHCdmlMaOZWF_DJk5XgJkkX9Aa0J7yCSzHxJgheYxC8J_JsDEjVgIhtgz4-0VHsDvpynkBtc9kU_-N6NEkrSe15l18NHApAt0wo_EUyJt39g_z2NDEqxINmdC38P5W0YyGu5WoSywcde-eWO8APsOmqWRAMZ1ePanqzR4xCM43-AP-3a1SJTKf4Z60DRnN4nNIm6nZi8tCv5GuhfzV60q2CZajA0TQLifY0BBrAS99tWmY01Inxtb32p9h4EPy1Dk"/>
+</div>
+</div>
+<!-- Typography & Content -->
+<div class="text-center w-full space-y-md mb-2xl">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-[#111827]">
+                Plan less. Do more.
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[280px] mx-auto opacity-90">
+                The first productivity app that understands your screenshots. Tasks, notes, and schedules organized by AI.
+            </p>
+</div>
+<!-- Actions -->
+<div class="w-full space-y-sm flex flex-col items-center">
+<button class="w-full max-w-[300px] h-[56px] bg-primary-container text-on-primary rounded-2xl font-headline-sm text-headline-sm flex items-center justify-center hover:bg-primary transition-colors shadow-[0px_8px_16px_rgba(79,70,229,0.2)] active:scale-95 duration-200">
+                Get Started
+            </button>
+<button class="w-full max-w-[300px] h-[56px] bg-transparent text-primary rounded-2xl font-headline-sm text-headline-sm flex items-center justify-center hover:bg-surface-container-low transition-colors active:scale-95 duration-200">
+                Sign In
+            </button>
+</div>
+</main>
+</body></html>

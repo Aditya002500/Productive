@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>CaptureFlow - Screenshot Inbox</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#2cdbe0",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-container": "#55e4a8",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#004f51",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#59f8fd",
+                        "secondary-fixed": "#71f8e4",
+                        "on-surface": "#191c1e",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container": "#eceef0",
+                        "primary": "#00696c",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface": "#f7f9fb",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#005048",
+                        "on-primary-fixed": "#002021",
+                        "on-background": "#191c1e",
+                        "secondary-fixed-dim": "#4fdbc8",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-bright": "#f7f9fb",
+                        "primary-container": "#37e1e6",
+                        "on-secondary-container": "#006f64",
+                        "surface-tint": "#00696c",
+                        "on-primary-container": "#006063",
+                        "inverse-primary": "#2cdbe0",
+                        "secondary": "#006b5f",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary-container": "#006343",
+                        "secondary-container": "#6df5e1",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3b494a",
+                        "outline": "#6b7a7a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "outline-variant": "#bac9c9",
+                        "on-secondary-fixed": "#00201c",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006c49"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "2xl": "48px",
+                        "lg": "24px",
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "3xl": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC; /* Level 0 Background as per Style Guidance */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom Ambient Shadows */
+        .ambient-shadow {
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background min-h-screen pb-[100px]">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-on-background z-40 transition-shadow duration-300" id="topAppBar">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full">
+<button aria-label="Menu" class="p-2 -ml-2 rounded-full hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors active:scale-95 duration-150 text-primary dark:text-primary-fixed-dim focus:outline-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight">CaptureFlow</h1>
+<button aria-label="Profile" class="p-2 -mr-2 rounded-full hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors active:scale-95 duration-150 text-primary dark:text-primary-fixed-dim focus:outline-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</header>
+<main class="px-margin-mobile pt-lg pb-3xl flex flex-col gap-2xl">
+<!-- Search and Filter Section -->
+<section class="flex flex-col gap-lg">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="w-full h-12 pl-12 pr-4 bg-surface-container-lowest border border-surface-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors ambient-shadow" placeholder="Search screenshots, text, or content..." type="text"/>
+</div>
+<!-- Category Chips -->
+<div class="flex gap-sm overflow-x-auto hide-scrollbar -mx-margin-mobile px-margin-mobile pb-2">
+<button class="flex-shrink-0 px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md tracking-wide">All Captures</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full bg-surface-container-low text-on-surface-variant border border-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors">Work</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full bg-surface-container-low text-on-surface-variant border border-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors">Finance</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full bg-surface-container-low text-on-surface-variant border border-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors">Inspiration</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full bg-surface-container-low text-on-surface-variant border border-surface-variant hover:bg-surface-container font-label-md text-label-md transition-colors">Receipts</button>
+</div>
+</section>
+<!-- Inbox Grid -->
+<section class="grid grid-cols-2 gap-md md:grid-cols-3 lg:grid-cols-4">
+<!-- Card 1: Needs Review -->
+<article class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden flex flex-col relative group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A modern, minimalist mobile UI screenshot showing a detailed financial dashboard with high-contrast text and crisp charts, illuminated by bright, cool-toned lighting, fitting a professional productivity app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjE-5ajexaHrDclSjy-_ClXtZqNSf415LpUmYNxWBQxjeWFulAiKSzMPK6jqs_NCSHDtLlhLQYBWfV5U7R9sHkfXg49NvlLvPWs-we5wMGbz2sqeN5DFT-NxP-IMfYNfxyfwbemiiqtsHOnxtI6SmpYxcXPzUJY6MKd0QNlYHNGHSYkc74EsFZx-htegZZPJ9v1TbP2dVaFlGEdz3P_P7HZGs4lAKbIlhNV5snPbYv_tp4dp--z7YRAEPMmXk1F9IaCynjBggvkb-p"/>
+<div class="absolute top-sm right-sm bg-[#EEF2FF] text-[#4338CA] px-2 py-1 rounded-full font-label-caps text-label-caps flex items-center gap-1 shadow-sm backdrop-blur-md bg-opacity-90">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4338CA]"></span>
+                        Needs Review
+                    </div>
+</div>
+<div class="p-sm flex flex-col gap-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate font-medium">Q3 Expense Report</h3>
+<p class="font-label-md text-label-md text-outline truncate">Oct 24, 10:42 AM</p>
+</div>
+</article>
+<!-- Card 2: Processed -->
+<article class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden flex flex-col relative group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A clean, typographic heavy mobile UI screenshot of an email client showing a thread about a project update, using vast whitespace and sharp geometric typography, conveying efficiency." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzS3-_MrUh2e_CUzGzhv4jKUAVWada_KWpMZXgPmTnHdhB167WiKMRE-6YdGJ2phQQiQcOb7XWpdnlA53jl3mZnr01DOKVIh3cGIPikmWXXlcmmTZdxCgoGSFuPYW1jpSk7CIkqI0zqQMkab79D5XZquOkfgbbVFqFydoncOMqspAeX8DkQo0wjBy8ZnYj3I-7LGC2x6dqU74uC3SQBYOlENC5hLpNCEiOtqbmapobnP3eoN6JNnWbcT7LG7-POXvzGgtsXf4luYPO"/>
+<div class="absolute top-sm right-sm bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-caps text-label-caps flex items-center gap-1 shadow-sm backdrop-blur-md bg-opacity-90">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check</span>
+                        Processed
+                    </div>
+</div>
+<div class="p-sm flex flex-col gap-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate font-medium">Client Feedback Email</h3>
+<p class="font-label-md text-label-md text-outline truncate">Oct 23, 4:15 PM</p>
+</div>
+</article>
+<!-- Card 3: Uncategorized -->
+<article class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden flex flex-col relative group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A minimalist architectural photograph of a modern building facade featuring clean geometric lines, glass panels, and vast empty sky, bathed in soft, diffused natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzZORwlSogcK7RICX6AV2uxXhEmpDR305b8WgTxVR_5L-_o8PCApQh99NGD_uLFmFtcOWR9pOGQ3_UQmkyio327Ep63sGIPe_vI43pxd_Mpt8wu_YprXWXxZ24y9k0_k-d_m7oNaOH-4sVAgGzp5c0cHWK_2i2b4fBd2eQv-foLmRAnMleT8L37mjUFgYC332MHwsYuaFDaU2ePNaalCaBzLXzL3ydiFZhxBLGz7hxCXD7ob-4hfmaoXwda-jGh13YPYcIVGb4lUlo"/>
+<div class="absolute top-sm right-sm bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full font-label-caps text-label-caps flex items-center gap-1 shadow-sm backdrop-blur-md bg-opacity-90">
+                         New
+                    </div>
+</div>
+<div class="p-sm flex flex-col gap-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate font-medium">Moodboard Idea 4</h3>
+<p class="font-label-md text-label-md text-outline truncate">Yesterday, 8:20 AM</p>
+</div>
+</article>
+<!-- Card 4: Processed -->
+<article class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden flex flex-col relative group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A high-contrast mobile screen capture of a digital receipt from a coffee shop, showcasing sharp black sans-serif typography against a stark white background with a minimalist layout." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2I_DIOi8s9VW4HPT2hgliyWhPQp-DzPDleh_V9ItPaDo5dosi3pwbZlGe1JCAUVRi3-3DG3AF4x_ZMqBmuBq-wAdwSdANRplf2Im7QNoyLeM48s2ppdJ631K89UyQmFboAsaUmlyyJ1BV0AnEzS2g4ka2oHqe7c7SwI5RvXU1As7hTmLoMSoKRLTybAqXKTgD-Wu4UCOOGkPHEi1gFkR0CMbPIi9SJI9Mvr0orelWJZEVhPeGlD8v_WCql-RqCRoMLHT3e9KYS5F9"/>
+<div class="absolute top-sm right-sm bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full font-label-caps text-label-caps flex items-center gap-1 shadow-sm backdrop-blur-md bg-opacity-90">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check</span>
+                        Processed
+                    </div>
+</div>
+<div class="p-sm flex flex-col gap-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate font-medium">Coffee Receipt</h3>
+<p class="font-label-md text-label-md text-outline truncate">Oct 21, 9:00 AM</p>
+</div>
+</article>
+<!-- Card 5: Needs Review -->
+<article class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden flex flex-col relative group cursor-pointer active:scale-[0.98] transition-transform duration-200">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A clean, flat design screenshot of a task management application showing a list of pending items with subtle teal accent colors on a soft white background, exuding organization and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfoM52F_VudYxoo1dO_BfkBoBeNoiS8IH2WcRBwnF1Wy-XC022Q4ePEhLy5PDqs4UTu26QR-ACaBs-Kz1bvNbe7FigrtF6f-Lm77xMQmc7tX33L3fmywdvvHT-OFP5a14IWpdzUgdd3dve7ssOj5TXSZX2MAzH349ixi9yc5boGVIh6PyK-1hMyfZ5wk5WXWB8igsfrxLFJ6Ipa7TeWcnkJsfa_Por3srRxf0MX1k5yVfWIFg9UaM_5KCDVhO_4RdNEc970xrK8R50"/>
+<div class="absolute top-sm right-sm bg-[#EEF2FF] text-[#4338CA] px-2 py-1 rounded-full font-label-caps text-label-caps flex items-center gap-1 shadow-sm backdrop-blur-md bg-opacity-90">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4338CA]"></span>
+                        Needs Review
+                    </div>
+</div>
+<div class="p-sm flex flex-col gap-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate font-medium">Weekly To-Do List</h3>
+<p class="font-label-md text-label-md text-outline truncate">Oct 20, 11:30 AM</p>
+</div>
+</article>
+<!-- Card 6: Error -->
+<article class="bg-surface-container-lowest rounded-2xl ambient-shadow overflow-hidden flex flex-col relative group cursor-pointer active:scale-[0.98] transition-transform duration-200 border border-error-container">
+<div class="relative w-full aspect-[3/4] bg-surface-container-low overflow-hidden">
+<div class="absolute inset-0 bg-surface-variant flex items-center justify-center opacity-50">
+<span class="material-symbols-outlined text-outline text-3xl">broken_image</span>
+</div>
+<div class="absolute top-sm right-sm bg-error-container text-on-error-container px-2 py-1 rounded-full font-label-caps text-label-caps flex items-center gap-1 shadow-sm backdrop-blur-md bg-opacity-90">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">error</span>
+                        Failed OCR
+                    </div>
+</div>
+<div class="p-sm flex flex-col gap-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate font-medium">Blurry Capture</h3>
+<p class="font-label-md text-label-md text-outline truncate">Oct 19, 2:45 PM</p>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 pb-safe px-4 bg-surface-container-lowest dark:bg-inverse-surface rounded-t-xl shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] shadow-md z-50 md:hidden">
+<!-- Tasks -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">check_circle</span>
+<span class="font-label-md text-label-md mt-1">Tasks</span>
+</button>
+<!-- Notes -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-label-md text-label-md mt-1">Notes</span>
+</button>
+<!-- Schedule -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">calendar_today</span>
+<span class="font-label-md text-label-md mt-1">Schedule</span>
+</button>
+<!-- AI Organise (Active) -->
+<button class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-5 py-1 active:scale-90 transition-all duration-200 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-md text-label-md mt-1">AI Organise</span>
+</button>
+</nav>
+<script>
+        // Simple scroll effect for TopAppBar shadow
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('topAppBar');
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>

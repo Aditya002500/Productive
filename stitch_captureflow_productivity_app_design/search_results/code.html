@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CaptureFlow - Search Results</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#6df5e1",
+                      "on-secondary-fixed-variant": "#005048",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "surface-dim": "#d8dadc",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#191c1e",
+                      "background": "#f7f9fb",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "primary-container": "#37e1e6",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#002021",
+                      "surface-variant": "#e0e3e5",
+                      "secondary-fixed": "#71f8e4",
+                      "on-background": "#191c1e",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#55e4a8",
+                      "primary-fixed": "#59f8fd",
+                      "on-secondary-container": "#006f64",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#006063",
+                      "surface-container-low": "#f2f4f6",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#2cdbe0",
+                      "on-secondary-fixed": "#00201c",
+                      "surface-container-high": "#e6e8ea",
+                      "secondary-fixed-dim": "#4fdbc8",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-primary-fixed-variant": "#004f51",
+                      "on-surface-variant": "#3b494a",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#2cdbe0",
+                      "outline": "#6b7a7a",
+                      "surface": "#f7f9fb",
+                      "surface-bright": "#f7f9fb",
+                      "primary": "#00696c",
+                      "on-tertiary-container": "#006343",
+                      "tertiary": "#006c49",
+                      "inverse-on-surface": "#eff1f3",
+                      "secondary": "#006b5f",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#2d3133",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface-container": "#eceef0",
+                      "outline-variant": "#bac9c9",
+                      "surface-tint": "#00696c",
+                      "on-tertiary-fixed": "#002113"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "2xl": "48px",
+                      "md": "16px",
+                      "margin-mobile": "16px",
+                      "lg": "24px",
+                      "3xl": "64px",
+                      "gutter": "16px",
+                      "margin-desktop": "32px",
+                      "base": "8px",
+                      "xl": "32px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col overflow-x-hidden font-sans">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-background z-40 flat no shadows flex justify-between items-center px-margin-mobile py-base w-full max-w-7xl mx-auto hidden md:flex">
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors active:scale-95 duration-150 ease-in-out text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-headline-md text-headline-md text-primary tracking-tight">CaptureFlow</div>
+</div>
+<!-- Search Input in Header (Desktop) -->
+<div class="flex-1 max-w-xl mx-xl relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low text-on-surface rounded-full py-2 pl-10 pr-10 border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container font-body-md text-body-md transition-all outline-none" placeholder="Search..." type="text" value="Design"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex items-center">
+<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center hover:bg-surface-container-highest transition-colors active:scale-95 duration-150 ease-in-out overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A clean, professional headshot of a user with a subtle smile, well-lit against a neutral background. The lighting is soft and even, typical of modern corporate portraits, fitting a minimal UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATm7sQOWL-C47c4yuRh6zULqvuK9UUMC4M80_GYMIe3Xhg5IBQ6K89oSI_ZAJT27iLOW4PUEvchmdzkhAmlvQReBp-WratVjtU5hZNBPq1O0UT2n0s0cotsMnhASe31-geJOzfQH5Gt_ASZ_CGP5Q2YfnHffB8QlUFppJ0UMjZJCtNR99ViASoYaM4UVfYV0jYjXl1ZpFTu-xtdQEFKG3KC_AgvbbgCFN0IIs3_JuVlKcoARi9oCq6n3evp7opzuqGwKN8rd7bzc2s"/>
+</button>
+</div>
+</header>
+<!-- Mobile Top Header / Search -->
+<div class="md:hidden sticky top-0 bg-background z-40 px-margin-mobile py-sm border-b border-surface-variant">
+<div class="flex items-center gap-sm">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex-1 relative">
+<input class="w-full bg-surface-container-lowest text-on-surface rounded-lg py-2 pl-3 pr-10 border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container font-body-md text-body-md transition-all outline-none" placeholder="Search..." type="text" value="Design"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<main class="flex-1 w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-lg md:py-xl pb-3xl flex flex-col gap-2xl">
+<div class="flex flex-col gap-xs">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-background">Search Results</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Showing results for "<span class="font-semibold text-primary">Design</span>"</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg auto-rows-min">
+<!-- Tasks Section -->
+<section class="md:col-span-8 flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">task_alt</span> Tasks
+                    </h2>
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded-full">2 MATCHES</span>
+</div>
+<div class="flex flex-col gap-md">
+<!-- Task Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)] flex items-start gap-md hover:bg-surface-container-lowest/90 cursor-pointer transition-colors border border-transparent hover:border-surface-variant group">
+<button class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center shrink-0 mt-0.5 group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-[14px] text-transparent">check</span>
+</button>
+<div class="flex-1 flex flex-col gap-xs">
+<h3 class="font-body-lg text-body-lg text-on-surface">Finalize <mark class="bg-secondary-container/30 text-on-surface px-1 rounded font-medium">Design</mark> System</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Review spacing tokens and typography hierarchy with the team.</p>
+<div class="flex items-center gap-3 mt-1">
+<span class="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> Today
+                                </span>
+<span class="bg-error-container text-on-error-container font-label-caps text-label-caps px-2 py-0.5 rounded text-[10px]">HIGH</span>
+</div>
+</div>
+</div>
+<!-- Task Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)] flex items-start gap-md hover:bg-surface-container-lowest/90 cursor-pointer transition-colors border border-transparent hover:border-surface-variant group">
+<button class="w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center shrink-0 mt-0.5 group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-[14px] text-transparent">check</span>
+</button>
+<div class="flex-1 flex flex-col gap-xs">
+<h3 class="font-body-lg text-body-lg text-on-surface">Update Landing Page <mark class="bg-secondary-container/30 text-on-surface px-1 rounded font-medium">Design</mark></h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Incorporate the new hero illustrations into the mockup.</p>
+<div class="flex items-center gap-3 mt-1">
+<span class="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> Tomorrow
+                                </span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Events Section -->
+<section class="md:col-span-4 flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">event</span> Events
+                    </h2>
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded-full">1 MATCH</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-lg shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border-l-4 border-primary hover:shadow-md transition-shadow cursor-pointer">
+<div class="flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold"><mark class="bg-secondary-container/30 text-on-surface px-1 rounded font-bold">Design</mark> Sync</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">more_vert</span>
+</div>
+<div class="flex flex-col gap-1 font-body-md text-body-md text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">schedule</span> 2:00 PM - 3:00 PM
+                            </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">videocam</span> Google Meet
+                            </div>
+</div>
+<div class="flex -space-x-2 mt-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface-container-lowest bg-surface-variant overflow-hidden"><img class="w-full h-full object-cover" data-alt="Tiny circular avatar showing a professional person's face against a light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGv1oHCiWBPwRRzfMKeFNY6yZ5Cnk1t9Iv4iy-2Z73tJQrDOAzDpSrFguR23YL66FkCBx6vDzPCo7AMY4ag_CAd6P43Le4IHOhefC2nb6hPeEeMywTZI_UJNlr9jL_OG7YEG2CqW4rAd388je_nSAin_OtYBrap9aYF0E-c3sDBq8z3_fHLSceCGDWI30jjIcVql5VjiTZKqa1shih9Bpa8M3oBgmItaJAGd3AIk7FHU8E4skk0niNTwO4HGXuJrcgIPdJvsiZ7ViF"/></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface-container-lowest bg-surface-variant overflow-hidden"><img class="w-full h-full object-cover" data-alt="Tiny circular avatar showing a different professional person's face against a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9lEcDYQPp8KFrQ1RTbusmnI1xIYxqKxe96Un9B8c79rFOQ7vEl3sFt6SaDFM27e0UNvnMd9_78CMlheBcUFy6P_AwnQbsL9gMJKoegXn73q3c5wa6yWVl9Jc3wPEpuT5V7J9q89z1uxBqaXmRV-1viOJmWEAu_CSEqgeTQqDDrEq3fHFdh12AUWBl-7a0Es2u6JeYmxKzG0cxWIJcFXCou3Xio4DCVtPpWDr3O5A-r2XBlo3JqQdkP2PY5bYkJnUCQNnuWboBecxd"/></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface-container-lowest bg-surface-container-low flex items-center justify-center font-label-caps text-[8px] text-on-surface-variant">+2</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Notes Section -->
+<section class="md:col-span-6 flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">description</span> Notes
+                    </h2>
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded-full">1 MATCH</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-lg shadow-[0px_4px_12px_rgba(0,0,0,0.05)] cursor-pointer hover:shadow-md transition-shadow flex flex-col gap-sm h-full">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Q3 Product Strategy</h3>
+<span class="font-label-md text-label-md text-on-surface-variant">Oct 12</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed line-clamp-4">
+                        The core focus for Q3 is to streamline the onboarding experience. We need to completely overhaul the visual <mark class="bg-secondary-container/30 text-on-surface px-1 rounded font-medium">design</mark> language to make it more approachable. The current interface feels too utilitarian. Let's schedule a kickoff next week.
+                    </p>
+<div class="mt-auto pt-4 flex gap-2">
+<span class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md px-2 py-1 rounded-md text-xs">Strategy</span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md px-2 py-1 rounded-md text-xs">UX</span>
+</div>
+</div>
+</section>
+<!-- Screenshots Section -->
+<section class="md:col-span-6 flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">image</span> Screenshots
+                    </h2>
+<span class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded-full">2 MATCHES</span>
+</div>
+<div class="grid grid-cols-2 gap-md h-full">
+<!-- Screenshot 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden cursor-pointer group flex flex-col h-full relative">
+<div class="aspect-video bg-surface-variant w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A clean UI mockup showing a minimalist dashboard design with a sidebar, data charts, and soft pastel colors. The aesthetic is modern corporate, flat, and well-structured, fitting a productivity app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwhqigrv4G4mgE-YWRN5NPIRQihI775nC-rO7GEJANukMWVUzkX9uMHzp1uUWRzuTT7rD1ARH1ue_5BxdtEhPwUXASlzfzPghezb8yvkKxsoghnAXJWUBe9j4VPYNGy6tHJVVX0K4Zlaa70WClNEZKMxzisHSnN-YlLivIYysdZFn-8XYHYgxEDuZl_ARsfpyYnJqQRyxbeMW9SBlDbwoYuGPlZ_GF83lDnjdbZwVdyLSN7fzhT_3gCl_2fCQpTUnKLCdKmna6sB84"/>
+</div>
+<div class="p-sm absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent">
+<h4 class="font-label-md text-label-md text-white truncate"><mark class="bg-secondary-container/50 text-white px-1 rounded">Design</mark> Inspiration 1</h4>
+</div>
+</div>
+<!-- Screenshot 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] overflow-hidden cursor-pointer group flex flex-col h-full relative">
+<div class="aspect-video bg-surface-variant w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A screenshot of an elegant mobile app interface design featuring large typography, ample whitespace, and a clean card-based layout. Colors are subtle and neutral." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNfnBa6fDT15mMo7tNojq0DKB_VgE3i71sIjQzwBz9ID69x6gvV1_MW4sqdR-59lGrDz6_cGyPRzx13gzpPhR7wg1_pt5QXPeOQLwEdJs_Phua7oTiVMgYmivwNpVTRQLBxQJuqI0wCBr5H2PbrjEJDdrkOoEQkEGfB1VT-s0pISnC38PMnsbvaf-_gaGma4afkd7eeiW9-woAChZaboZsWiY6V3i2JZ7ijKYNXKLrLdbf6-YI8FUpX4DNYmEJF6mIaDoNOcFn7dC7"/>
+</div>
+<div class="p-sm absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent">
+<h4 class="font-label-md text-label-md text-white truncate">Mobile <mark class="bg-secondary-container/50 text-white px-1 rounded">Design</mark> Ref</h4>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container-lowest dark:bg-surface-container-lowest shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] md:hidden">
+<div class="flex justify-around items-center px-margin-mobile pb-base pt-sm w-full">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high transition-all active:scale-90 duration-200 rounded-lg">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high transition-all active:scale-90 duration-200 rounded-lg">
+<span class="material-symbols-outlined text-[24px] mb-1">calendar_today</span>
+<span class="font-label-md text-label-md">Planner</span>
+</button>
+<!-- FAB Replacement in Nav for visual balance on Mobile -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high transition-all active:scale-90 duration-200 rounded-lg">
+<div class="bg-primary text-on-primary rounded-full p-2 mb-1 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">center_focus_strong</span>
+</div>
+<span class="font-label-md text-label-md">Capture</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-md py-xs hover:bg-surface-container-high transition-all active:scale-90 duration-200 rounded-lg">
+<span class="material-symbols-outlined text-[24px] mb-1">description</span>
+<span class="font-label-md text-label-md">Notes</span>
+</button>
+<!-- Active Search Tab -->
+<button class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-fixed-variant text-on-primary-container dark:text-primary-fixed rounded-full px-md py-xs hover:bg-surface-container-high transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-md text-label-md font-semibold">Search</span>
+</button>
+</div>
+</nav>
+</body></html>

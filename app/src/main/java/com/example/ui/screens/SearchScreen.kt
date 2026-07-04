@@ -27,12 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppViewModel
+import com.example.ui.components.CaptureFlowBottomNavigation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     viewModel: AppViewModel,
     onNavigateToTaskDetail: (Int) -> Unit,
+    onNavigateBottomBar: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -56,10 +58,8 @@ fun SearchScreen(
         },
         bottomBar = {
             CaptureFlowBottomNavigation(
-                activeTab = "search",
-                onTabClick = { tab ->
-                    if (tab == "home") onBack()
-                }
+                currentRoute = "search",
+                onNavigate = onNavigateBottomBar
             )
         }
     ) { innerPadding ->
@@ -160,7 +160,7 @@ fun SearchScreen(
                         when (item) {
                             is SearchResultItem.TaskResult -> {
                                 Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -178,7 +178,7 @@ fun SearchScreen(
                             }
                             is SearchResultItem.NoteResult -> {
                                 Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -194,7 +194,7 @@ fun SearchScreen(
                             }
                             is SearchResultItem.CaptureResult -> {
                                 Card(
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {

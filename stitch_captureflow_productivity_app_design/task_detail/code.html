@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Task Detail - CaptureFlow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface": "#f7f9fb",
+                        "surface-container-low": "#f2f4f6",
+                        "primary-fixed": "#59f8fd",
+                        "outline-variant": "#bac9c9",
+                        "on-tertiary-container": "#006343",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#2cdbe0",
+                        "on-primary-container": "#006063",
+                        "secondary": "#006b5f",
+                        "tertiary": "#006c49",
+                        "on-surface": "#191c1e",
+                        "on-secondary-container": "#006f64",
+                        "on-surface-variant": "#3b494a",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed": "#002021",
+                        "outline": "#6b7a7a",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed": "#00201c",
+                        "on-primary-fixed-variant": "#004f51",
+                        "surface-bright": "#f7f9fb",
+                        "surface-tint": "#00696c",
+                        "on-secondary-fixed-variant": "#005048",
+                        "tertiary-container": "#55e4a8",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-variant": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#191c1e",
+                        "secondary-container": "#6df5e1",
+                        "on-tertiary-fixed": "#002113",
+                        "primary-container": "#37e1e6",
+                        "surface-container-high": "#e6e8ea",
+                        "background": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "secondary-fixed": "#71f8e4",
+                        "inverse-primary": "#2cdbe0",
+                        "secondary-fixed-dim": "#4fdbc8",
+                        "primary": "#00696c",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eff1f3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "16px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "3xl": "64px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "margin-mobile": "16px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "2xl": "48px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; color: #191c1e; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .ambient-shadow { box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05); }
+        .custom-checkbox:checked + div { background-color: #37e1e6; border-color: #37e1e6; }
+        .custom-checkbox:checked + div svg { opacity: 1; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen pb-24 md:pb-0 flex flex-col md:flex-row">
+<!-- TopAppBar for Desktop / Header for Mobile -->
+<header class="w-full sticky top-0 z-50 bg-surface md:hidden flex items-center justify-between px-margin-mobile py-base border-b-0 shadow-none">
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-headline-sm text-headline-sm text-on-surface">CaptureFlow</span>
+<button class="text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</header>
+<!-- Desktop Sidebar placeholder (hidden on mobile, acting as visual anchor for layout) -->
+<aside class="hidden md:flex w-64 flex-col bg-surface-container-lowest h-screen sticky top-0 border-r border-outline-variant/20 p-6">
+<div class="font-display-lg text-display-lg font-bold text-on-surface mb-8">CaptureFlow</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span> Day
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="view_week">view_week</span> Week
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span> Month
+            </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg bg-surface-container-high text-primary font-body-md text-body-md font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span> Tasks
+            </a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 max-w-[1200px] mx-auto w-full px-margin-mobile md:px-margin-desktop py-lg md:py-2xl">
+<!-- Task Header -->
+<div class="mb-2xl">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-6">Finalize Q3 Marketing Campaign Deliverables</h1>
+<div class="flex flex-wrap gap-4 items-center">
+<!-- Priority Chip -->
+<div class="inline-flex items-center gap-1.5 bg-[#FEF2F2] text-[#EF4444] px-3 py-1.5 rounded-[4px] font-label-md text-label-md">
+<span class="material-symbols-outlined !text-[16px]" data-icon="priority_high">priority_high</span>
+                    High Priority
+                </div>
+<!-- Due Date -->
+<div class="inline-flex items-center gap-1.5 bg-surface-container-low text-on-surface-variant px-3 py-1.5 rounded-[4px] font-label-md text-label-md">
+<span class="material-symbols-outlined !text-[16px]" data-icon="event">event</span>
+                    Oct 25
+                </div>
+<!-- Reminder -->
+<div class="inline-flex items-center gap-1.5 bg-surface-container-low text-on-surface-variant px-3 py-1.5 rounded-[4px] font-label-md text-label-md">
+<span class="material-symbols-outlined !text-[16px]" data-icon="alarm">alarm</span>
+                    10:00 AM
+                </div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Details -->
+<div class="lg:col-span-2 space-y-6">
+<!-- Checklist Section -->
+<section class="bg-surface-container-lowest rounded-xl p-lg ambient-shadow">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="checklist">checklist</span>
+                        Sub-tasks
+                    </h2>
+<div class="space-y-4">
+<label class="flex items-start gap-3 group cursor-pointer">
+<div class="relative flex items-center justify-center mt-0.5">
+<input checked="" class="custom-checkbox peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded-full border border-outline peer-checked:border-primary-container peer-checked:bg-primary-container transition-all flex items-center justify-center">
+<svg class="w-3 h-3 text-on-primary-container opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="3" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface-variant line-through opacity-70 transition-all group-hover:opacity-100">Draft initial copy for landing page</span>
+</label>
+<label class="flex items-start gap-3 group cursor-pointer">
+<div class="relative flex items-center justify-center mt-0.5">
+<input class="custom-checkbox peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded-full border border-outline peer-checked:border-primary-container peer-checked:bg-primary-container transition-all flex items-center justify-center">
+<svg class="w-3 h-3 text-on-primary-container opacity-0 transition-opacity" fill="none" stroke="currentColor" stroke-width="3" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface transition-all">Review ad creatives with design team</span>
+</label>
+<label class="flex items-start gap-3 group cursor-pointer">
+<div class="relative flex items-center justify-center mt-0.5">
+<input class="custom-checkbox peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 rounded-full border border-outline peer-checked:border-primary-container peer-checked:bg-primary-container transition-all flex items-center justify-center">
+<svg class="w-3 h-3 text-on-primary-container opacity-0 transition-opacity" fill="none" stroke="currentColor" stroke-width="3" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface transition-all">Approve budget allocation for paid social</span>
+</label>
+</div>
+</section>
+<!-- Notes Section -->
+<section class="bg-surface-container-lowest rounded-xl p-lg ambient-shadow">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="notes">notes</span>
+                        Notes
+                    </h2>
+<textarea class="w-full bg-surface-container-low text-on-surface-variant rounded-[8px] border border-outline-variant/30 p-4 font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all resize-none min-h-[150px] placeholder:text-outline" placeholder="Add additional context, meeting links, or random thoughts here..."></textarea>
+</section>
+</div>
+<!-- Right Column: Meta & Actions -->
+<div class="space-y-6">
+<!-- Attachments -->
+<section class="bg-surface-container-lowest rounded-xl p-lg ambient-shadow">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="attachment">attachment</span>
+                        Attachments
+                    </h2>
+<div class="group relative rounded-lg overflow-hidden border border-outline-variant/20 aspect-video cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="A clean, minimalist UI design mockup screenshot for a marketing campaign dashboard, featuring charts and data tables. The style is modern, well-lit, with crisp geometry and a subtle tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSxdEDhqDIfEjkJm8oR_58zms_1vl2ZOX8pXwllLKFgJbQjpCNNLCxhjNKiRVeJ9Tu6Fkjr-UuYHYw1b6PmolFQ4dWb7vAexdjqeY0l7SyFwc4bjxGhTSul8CuaC-33MIURbzEUOLjaTrmldNAPMYI-dYazREq38fx75PF2-6JZg1_K_QFXOEnjQY-2bwZouyNiF5pwM0If7g2SLXP4HqqXxT56qk0-t-Xjce4YOD-xPVWUGMja8nNgGiROwc5haC6-PLTOjocPU6C"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-3xl">zoom_in</span>
+</div>
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+<span class="text-white font-label-md text-label-md block truncate">Campaign_Assets_v2.png</span>
+</div>
+</div>
+<button class="mt-4 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-surface-container-low text-on-surface-variant hover:bg-surface-container-highest transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined !text-[18px]" data-icon="add">add</span> Add File
+                    </button>
+</section>
+</div>
+</div>
+<!-- Sticky Footer Action -->
+<div class="fixed bottom-0 left-0 md:left-64 right-0 bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant/20 p-4 md:p-6 z-40 hidden md:flex justify-end gap-4 shadow-[0px_-4px_12px_rgba(0,0,0,0.02)]">
+<button class="px-6 py-2.5 rounded-[4px] bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+                Cancel
+            </button>
+<button class="px-8 py-2.5 rounded-[4px] bg-[#4F46E5] text-white font-label-md text-label-md hover:bg-[#4338ca] transition-colors shadow-sm">
+                Complete Task
+            </button>
+</div>
+<!-- Mobile Floating Action Button (Alternative to sticky footer for better mobile UX on details) -->
+<button class="md:hidden fixed bottom-24 right-4 bg-[#4F46E5] text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="check">check</span>
+</button>
+</main>
+<!-- BottomNavBar for Mobile (Suppressed contextually per instructions, but requested to implement JSON if applicable. Since this is a detail/task-focused screen, nav shell should be suppressed on mobile to focus on the canvas. However, to fulfill the prompt's constraint to 'output a design using predicted components', I will include it hidden, or contextual. Per 'Task-Focused' rule, I must exclude it if there's a back action. The header has a back action. So I will NOT render the bottom nav bar here to adhere strictly to the Semantic Shell Mandate.) -->
+</body></html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CaptureFlow - Empty States</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#f7f9fb",
+                      "inverse-primary": "#2cdbe0",
+                      "tertiary-container": "#55e4a8",
+                      "secondary-container": "#6df5e1",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "tertiary": "#006c49",
+                      "surface-container-high": "#e6e8ea",
+                      "secondary": "#006b5f",
+                      "primary-container": "#37e1e6",
+                      "secondary-fixed-dim": "#4fdbc8",
+                      "on-tertiary-fixed": "#002113",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "surface-container": "#eceef0",
+                      "inverse-surface": "#2d3133",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed": "#002021",
+                      "primary-fixed-dim": "#2cdbe0",
+                      "primary": "#00696c",
+                      "on-background": "#191c1e",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "tertiary-fixed": "#6ffbbe",
+                      "surface-container-low": "#f2f4f6",
+                      "secondary-fixed": "#71f8e4",
+                      "on-secondary-fixed": "#00201c",
+                      "surface-tint": "#00696c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#191c1e",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed-variant": "#005048",
+                      "on-secondary-container": "#006f64",
+                      "on-primary": "#ffffff",
+                      "background": "#f7f9fb",
+                      "on-tertiary-container": "#006343",
+                      "surface-dim": "#d8dadc",
+                      "primary-fixed": "#59f8fd",
+                      "surface-container-highest": "#e0e3e5",
+                      "outline": "#6b7a7a",
+                      "outline-variant": "#bac9c9",
+                      "on-error-container": "#93000a",
+                      "surface-variant": "#e0e3e5",
+                      "on-primary-container": "#006063",
+                      "on-secondary": "#ffffff",
+                      "on-surface-variant": "#3b494a",
+                      "on-primary-fixed-variant": "#004f51",
+                      "inverse-on-surface": "#eff1f3"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "xl": "32px",
+                      "2xl": "48px",
+                      "sm": "8px",
+                      "gutter": "16px",
+                      "md": "16px",
+                      "margin-desktop": "32px",
+                      "margin-mobile": "16px",
+                      "lg": "24px",
+                      "3xl": "64px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        /* Ambient shadows for cards */
+        .ambient-shadow {
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar Shell -->
+<header class="w-full top-0 sticky bg-surface dark:bg-on-background flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full z-40 transition-shadow duration-300" id="top-bar">
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors active:scale-95 transition-transform duration-150 text-on-surface-variant dark:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg text-display-lg text-primary dark:text-primary-fixed-dim tracking-tight hidden md:block">CaptureFlow</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-colors active:scale-95 transition-transform duration-150 text-on-surface-variant dark:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto px-margin-mobile md:px-margin-desktop py-xl md:py-3xl flex flex-col items-center pb-[100px] md:pb-xl">
+<div class="w-full max-w-[1200px] flex flex-col gap-2xl">
+<div class="text-center mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface">Getting Started</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm max-w-lg mx-auto">Your workspace is clean and ready. Start adding content to build your flow.</p>
+</div>
+<!-- Bento Grid Layout for Empty States -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter lg:gap-lg w-full">
+<!-- No Tasks Card -->
+<div class="bg-surface-container-lowest rounded-xl ambient-shadow p-lg flex flex-col items-center justify-center text-center min-h-[320px] transition-transform duration-300 hover:-translate-y-1">
+<div class="w-48 h-48 mb-md relative rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[64px] text-outline-variant font-light" style="font-variation-settings: 'wght' 200;">check_circle</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">No Tasks Yet</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">A clear mind starts here. Break down your next big project.</p>
+<button class="bg-primary-container text-on-primary-container hover:bg-[#2cdbe0] font-label-md text-label-md px-6 py-3 rounded-full transition-colors active:scale-95 inline-flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        New Task
+                    </button>
+</div>
+<!-- No Notes / Welcome Card (using the reference image) -->
+<div class="bg-surface-container-lowest rounded-xl ambient-shadow p-lg flex flex-col items-center justify-center text-center min-h-[320px] md:col-span-2 lg:col-span-1 transition-transform duration-300 hover:-translate-y-1">
+<div class="w-full h-48 mb-md relative rounded-lg overflow-hidden bg-surface-container flex items-center justify-center">
+<img alt="Minimal, high-end illustration for a productivity app welcome screen. A clean, abstract 3D composition of organized floating cards, a sleek calendar grid, and a subtle AI lens icon." class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLvuSZQ-xoH0cKZrTxZwBGjWJBXrhCrdq1YENg78a3FFEgLvnwhbScYk-X7u163Jq5wvLkL8Xoz_iZ8CvsqScHiSA3RmL9qB7tNVD9OL8zOsGXRFhCZTV-5DeotUh-fYgzFrlt-_O0OMKv-x-ucU0x6g_axYbwjqr3-2kCHmw99CwXjLH7F_rUY-hTYygNNTNBxi9pPgKKOdGKkuF-UdWJNDarIzAkiIDHXQ67dMScb8EwE1Hh7joCUiK1oz"/>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Empty Canvas</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Capture fleeting thoughts, meeting details, or brilliant ideas.</p>
+<button class="bg-[#F1F5F9] text-primary hover:bg-surface-container-high font-label-md text-label-md px-6 py-3 rounded-full transition-colors active:scale-95 inline-flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-[18px]">edit_document</span>
+                        Jot a Note
+                    </button>
+</div>
+<!-- No Screenshots Card -->
+<div class="bg-surface-container-lowest rounded-xl ambient-shadow p-lg flex flex-col items-center justify-center text-center min-h-[320px] transition-transform duration-300 hover:-translate-y-1">
+<div class="w-48 h-48 mb-md relative rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-[64px] text-outline-variant font-light" style="font-variation-settings: 'wght' 200;">photo_library</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">No Screenshots</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Save visual references, UI inspiration, or important receipts.</p>
+<button class="bg-[#F1F5F9] text-primary hover:bg-surface-container-high font-label-md text-label-md px-6 py-3 rounded-full transition-colors active:scale-95 inline-flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-[18px]">upload</span>
+                        Upload Image
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Shell (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-20 pb-safe px-4 bg-surface-container-lowest dark:bg-inverse-surface rounded-t-xl shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] shadow-md z-50">
+<!-- Tasks (Active for this demo context of viewing 'No Tasks') -->
+<button class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-5 py-1 active:scale-90 transition-all duration-200 focus:outline-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-label-md mt-1">Tasks</span>
+</button>
+<!-- Notes -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200 focus:outline-none">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md mt-1">Notes</span>
+</button>
+<!-- Schedule -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200 focus:outline-none">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md mt-1">Schedule</span>
+</button>
+<!-- AI Organise -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:text-primary dark:hover:text-primary-fixed-dim active:scale-90 transition-all duration-200 focus:outline-none">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-md text-label-md mt-1">AI Organise</span>
+</button>
+</nav>
+<!-- NavigationDrawer Shell (Hidden by default, used for structural context on desktop if expanded, but usually a sidebar in this layout style) -->
+<!-- Included for JSON compliance but visually suppressed in this specific centered canvas view to focus on empty states -->
+<aside class="hidden md:flex flex-col p-lg gap-base w-80 h-full fixed left-0 top-0 z-[60] bg-surface dark:bg-inverse-surface shadow-xl transform -translate-x-full transition-transform duration-300" id="nav-drawer">
+<!-- Drawer Content would go here -->
+</aside>
+<script>
+        // Simple script to handle TopBar scroll shadow for a slightly more polished feel
+        const topBar = document.getElementById('top-bar');
+        const mainContent = document.querySelector('main');
+
+        mainContent.addEventListener('scroll', () => {
+            if (mainContent.scrollTop > 10) {
+                topBar.classList.add('shadow-sm');
+                topBar.classList.replace('bg-surface', 'bg-surface-container-lowest');
+            } else {
+                topBar.classList.remove('shadow-sm');
+                topBar.classList.replace('bg-surface-container-lowest', 'bg-surface');
+            }
+        });
+    </script>
+</body></html>

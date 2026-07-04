@@ -336,7 +336,7 @@ fun OnboardingStepThree(onContinue: () -> Unit) {
                 modifier = Modifier
                     .size(280.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -496,7 +496,7 @@ fun FeatureCard(
     desc: String
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         modifier = modifier.height(160.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -551,7 +551,7 @@ fun PermissionRowCard(
     desc: String
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)

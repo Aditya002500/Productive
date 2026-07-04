@@ -51,7 +51,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 420.dp)
-                .background(Color.White, RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                 .padding(32.dp)
                 .verticalScroll(rememberScrollState())
         ) {

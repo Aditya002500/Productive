@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CaptureFlow Premium</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f7f9fb",
+                        "inverse-primary": "#2cdbe0",
+                        "tertiary-container": "#55e4a8",
+                        "secondary-container": "#6df5e1",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "tertiary": "#006c49",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary": "#006b5f",
+                        "primary-container": "#37e1e6",
+                        "secondary-fixed-dim": "#4fdbc8",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "inverse-surface": "#2d3133",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002021",
+                        "primary-fixed-dim": "#2cdbe0",
+                        "primary": "#00696c",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed": "#71f8e4",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-tint": "#00696c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005048",
+                        "on-secondary-container": "#006f64",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-tertiary-container": "#006343",
+                        "surface-dim": "#d8dadc",
+                        "primary-fixed": "#59f8fd",
+                        "surface-container-highest": "#e0e3e5",
+                        "outline": "#6b7a7a",
+                        "outline-variant": "#bac9c9",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e0e3e5",
+                        "on-primary-container": "#006063",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#3b494a",
+                        "on-primary-fixed-variant": "#004f51",
+                        "inverse-on-surface": "#eff1f3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "2xl": "48px",
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "lg": "24px",
+                        "3xl": "64px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Ambient shadows and transitions */
+        .ambient-shadow-lvl1 {
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .ambient-shadow-lvl2 {
+            box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.1);
+        }
+        .pricing-card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .pricing-card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.1);
+        }
+        /* Custom toggle switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #37e1e6;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #37e1e6;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased">
+<!-- Header / TopAppBar -->
+<header class="w-full top-0 sticky bg-surface flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full z-40 flat no shadows">
+<button aria-label="Go back" class="flex items-center justify-center p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm text-primary tracking-tight">CaptureFlow Pro</h1>
+<div class="w-10"></div> <!-- Placeholder for balance -->
+</header>
+<main class="flex-grow flex flex-col items-center justify-start px-margin-mobile md:px-margin-desktop py-xl w-full max-w-5xl mx-auto">
+<!-- Hero Section -->
+<div class="text-center mb-2xl max-w-2xl">
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background mb-gutter tracking-tight">Unlock Peak Productivity</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Elevate your workflow with AI-powered organization, unlimited storage, and advanced integrations.</p>
+</div>
+<!-- Billing Toggle -->
+<div class="flex items-center justify-center gap-md mb-2xl">
+<span class="font-label-md text-label-md text-on-surface-variant">Monthly</span>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 transition-transform duration-300 ease-in-out border-surface-container-highest" id="billing-toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container-highest cursor-pointer transition-colors duration-300 ease-in-out" for="billing-toggle"></label>
+</div>
+<span class="font-label-md text-label-md text-on-background flex items-center gap-2">
+                Annually
+                <span class="bg-tertiary-container text-on-tertiary-container font-label-caps text-label-caps px-2 py-1 rounded-full uppercase tracking-widest">Best Value</span>
+</span>
+</div>
+<!-- Pricing Cards -->
+<div class="w-full grid grid-cols-1 md:grid-cols-2 gap-lg max-w-4xl mb-3xl">
+<!-- Free Tier Card -->
+<div class="bg-surface-container-lowest rounded-[16px] p-lg ambient-shadow-lvl1 flex flex-col pricing-card-hover border border-transparent">
+<div class="mb-xl">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Basic</h3>
+<div class="flex items-baseline gap-1">
+<span class="font-display-lg text-display-lg text-on-background">$0</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ forever</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Essential tools for getting started.</p>
+</div>
+<ul class="flex flex-col gap-md mb-2xl flex-grow">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="check">check</span>
+<span class="font-body-md text-body-md text-on-surface">Up to 100 notes/month</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="check">check</span>
+<span class="font-body-md text-body-md text-on-surface">Basic text formatting</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="check">check</span>
+<span class="font-body-md text-body-md text-on-surface">Sync across 2 devices</span>
+</li>
+<li class="flex items-start gap-3 opacity-50">
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="close">close</span>
+<span class="font-body-md text-body-md text-on-surface line-through">AI Organise Assistant</span>
+</li>
+</ul>
+<button class="w-full py-3 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md transition-colors hover:bg-surface-container-high active:scale-95 duration-150 text-center">
+                    Current Plan
+                </button>
+</div>
+<!-- Pro Tier Card (Highlighted) -->
+<div class="bg-surface-container-lowest rounded-[16px] p-lg ambient-shadow-lvl2 flex flex-col relative pricing-card-hover border-2 border-primary-container overflow-hidden">
+<!-- Subtle background gradient -->
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container/10 to-transparent pointer-events-none"></div>
+<div class="mb-xl relative z-10">
+<div class="flex justify-between items-center mb-sm">
+<h3 class="font-headline-md text-headline-md text-primary">Pro</h3>
+<span class="material-symbols-outlined text-primary-container text-[24px]" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-lg text-display-lg text-on-background" id="pro-price">$8.99</span>
+<span class="font-body-md text-body-md text-on-surface-variant" id="pro-period">/ mo, billed annually</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">For professionals who need more power.</p>
+</div>
+<ul class="flex flex-col gap-md mb-2xl flex-grow relative z-10">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Unlimited notes &amp; storage</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Unlimited device sync</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Advanced AI Organise Assistant</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[20px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Priority customer support</span>
+</li>
+</ul>
+<button class="relative z-10 w-full py-3 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md transition-colors hover:bg-primary-fixed active:scale-95 duration-150 text-center font-bold shadow-md">
+                    Start 7-Day Free Trial
+                </button>
+<p class="text-center font-label-caps text-label-caps text-on-surface-variant mt-3 relative z-10">Cancel anytime. We'll remind you 2 days before.</p>
+</div>
+</div>
+<!-- Comparison Table (Desktop primarily) -->
+<div class="w-full max-w-4xl bg-surface-container-lowest rounded-[16px] p-lg ambient-shadow-lvl1 mb-3xl hidden md:block">
+<h3 class="font-headline-sm text-headline-sm text-on-background mb-lg text-center">Compare Plans</h3>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-variant">
+<th class="py-4 font-label-md text-label-md text-on-surface-variant font-semibold w-1/2">Features</th>
+<th class="py-4 font-label-md text-label-md text-on-surface-variant font-semibold w-1/4 text-center">Basic</th>
+<th class="py-4 font-label-md text-label-md text-primary font-semibold w-1/4 text-center">Pro</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<tr class="border-b border-surface-container">
+<td class="py-4 text-on-surface">Monthly Note Limit</td>
+<td class="py-4 text-center text-on-surface-variant">100</td>
+<td class="py-4 text-center text-primary font-medium">Unlimited</td>
+</tr>
+<tr class="border-b border-surface-container">
+<td class="py-4 text-on-surface">Device Syncing</td>
+<td class="py-4 text-center text-on-surface-variant">2 Devices</td>
+<td class="py-4 text-center text-primary font-medium">Unlimited</td>
+</tr>
+<tr class="border-b border-surface-container">
+<td class="py-4 text-on-surface">AI Smart Tagging</td>
+<td class="py-4 text-center text-outline-variant"><span class="material-symbols-outlined text-[18px]" data-icon="close">close</span></td>
+<td class="py-4 text-center text-primary-container"><span class="material-symbols-outlined text-[18px]" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span></td>
+</tr>
+<tr>
+<td class="py-4 text-on-surface">Export to PDF/Markdown</td>
+<td class="py-4 text-center text-outline-variant"><span class="material-symbols-outlined text-[18px]" data-icon="close">close</span></td>
+<td class="py-4 text-center text-primary-container"><span class="material-symbols-outlined text-[18px]" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto pb-lg text-center w-full">
+<button class="font-label-md text-label-md text-primary hover:underline underline-offset-4 transition-all duration-200">
+                Restore Purchase
+            </button>
+<div class="flex justify-center gap-md mt-sm font-label-caps text-label-caps text-on-surface-variant">
+<a class="hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<span>•</span>
+<a class="hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+</div>
+</div>
+</main>
+<script>
+        // Simple toggle logic for pricing
+        const toggle = document.getElementById('billing-toggle');
+        const proPrice = document.getElementById('pro-price');
+        const proPeriod = document.getElementById('pro-period');
+
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                // Annual
+                proPrice.textContent = '$8.99';
+                proPeriod.textContent = '/ mo, billed annually';
+            } else {
+                // Monthly
+                proPrice.textContent = '$12.99';
+                proPeriod.textContent = '/ mo, billed monthly';
+            }
+        });
+    </script>
+</body></html>

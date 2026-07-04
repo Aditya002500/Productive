@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create New Task</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "error-container": "#ffdad6",
+                            "background": "#f7f9fb",
+                            "on-error": "#ffffff",
+                            "primary-fixed-dim": "#2cdbe0",
+                            "surface-container-lowest": "#ffffff",
+                            "surface-container-low": "#f2f4f6",
+                            "on-surface": "#191c1e",
+                            "surface-dim": "#d8dadc",
+                            "outline-variant": "#bac9c9",
+                            "secondary-container": "#6df5e1",
+                            "surface": "#f7f9fb",
+                            "inverse-surface": "#2d3133",
+                            "tertiary-fixed": "#6ffbbe",
+                            "secondary-fixed": "#71f8e4",
+                            "secondary-fixed-dim": "#4fdbc8",
+                            "error": "#ba1a1a",
+                            "on-error-container": "#93000a",
+                            "surface-container-highest": "#e0e3e5",
+                            "surface-bright": "#f7f9fb",
+                            "on-tertiary-fixed-variant": "#005236",
+                            "outline": "#6b7a7a",
+                            "tertiary": "#006c49",
+                            "on-secondary-fixed-variant": "#005048",
+                            "on-primary-container": "#006063",
+                            "on-primary-fixed-variant": "#004f51",
+                            "inverse-on-surface": "#eff1f3",
+                            "on-background": "#191c1e",
+                            "on-secondary": "#ffffff",
+                            "tertiary-fixed-dim": "#4edea3",
+                            "on-tertiary-fixed": "#002113",
+                            "surface-variant": "#e0e3e5",
+                            "surface-container": "#eceef0",
+                            "primary-fixed": "#59f8fd",
+                            "primary-container": "#37e1e6",
+                            "on-tertiary-container": "#006343",
+                            "on-secondary-fixed": "#00201c",
+                            "surface-tint": "#00696c",
+                            "primary": "#00696c",
+                            "on-tertiary": "#ffffff",
+                            "inverse-primary": "#2cdbe0",
+                            "secondary": "#006b5f",
+                            "surface-container-high": "#e6e8ea",
+                            "on-secondary-container": "#006f64",
+                            "tertiary-container": "#55e4a8",
+                            "on-primary-fixed": "#002021",
+                            "on-surface-variant": "#3b494a",
+                            "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "xs": "4px",
+                            "sm": "8px",
+                            "xl": "32px",
+                            "gutter": "16px",
+                            "margin-mobile": "16px",
+                            "2xl": "48px",
+                            "margin-desktop": "32px",
+                            "lg": "24px",
+                            "base": "8px",
+                            "3xl": "64px",
+                            "md": "16px"
+                    },
+                    "fontFamily": {
+                            "headline-md": [
+                                    "Inter"
+                            ],
+                            "display-lg-mobile": [
+                                    "Inter"
+                            ],
+                            "headline-sm": [
+                                    "Inter"
+                            ],
+                            "display-lg": [
+                                    "Inter"
+                            ],
+                            "label-caps": [
+                                    "Inter"
+                            ],
+                            "label-md": [
+                                    "Inter"
+                            ],
+                            "body-md": [
+                                    "Inter"
+                            ],
+                            "body-lg": [
+                                    "Inter"
+                            ]
+                    },
+                    "fontSize": {
+                            "headline-md": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "32px",
+                                            "letterSpacing": "-0.01em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "display-lg-mobile": [
+                                    "28px",
+                                    {
+                                            "lineHeight": "34px",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "headline-sm": [
+                                    "20px",
+                                    {
+                                            "lineHeight": "28px",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "display-lg": [
+                                    "32px",
+                                    {
+                                            "lineHeight": "40px",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "label-caps": [
+                                    "11px",
+                                    {
+                                            "lineHeight": "16px",
+                                            "letterSpacing": "0.05em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "label-md": [
+                                    "12px",
+                                    {
+                                            "lineHeight": "16px",
+                                            "letterSpacing": "0.01em",
+                                            "fontWeight": "500"
+                                    }
+                            ],
+                            "body-md": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "20px",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "body-lg": [
+                                    "16px",
+                                    {
+                                            "lineHeight": "24px",
+                                            "fontWeight": "400"
+                                    }
+                            ]
+                    }
+            },
+                },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-3xl flex flex-col items-center">
+<!-- Top App Bar - Transactional/Task Focus, hidden nav elements -->
+<header class="w-full max-w-[600px] flex justify-between items-center px-margin-mobile h-16 z-50 bg-surface fixed top-0 left-1/2 -translate-x-1/2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors active:scale-95 text-on-surface-variant">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h1 class="font-headline-sm text-headline-sm-mobile text-on-surface font-semibold">New Task</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[600px] px-margin-mobile pt-24 flex flex-col gap-lg pb-3xl">
+<!-- Task Title Input Area -->
+<section class="bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-lg flex flex-col gap-sm">
+<input autofocus="" class="w-full bg-transparent border-none text-headline-md font-headline-md focus:ring-0 placeholder:text-outline-variant p-0 m-0 text-on-surface focus:outline-none" placeholder="What needs to be done?" type="text"/>
+<textarea class="w-full bg-transparent border-none text-body-lg font-body-lg text-on-surface-variant placeholder:text-outline focus:ring-0 p-0 m-0 resize-none focus:outline-none" placeholder="Add a description..." rows="2"></textarea>
+</section>
+<!-- Configuration Grid (Bento style) -->
+<div class="grid grid-cols-2 gap-sm">
+<!-- Priority Selection -->
+<section class="col-span-2 bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex flex-col gap-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Priority</span>
+<div class="flex gap-sm w-full">
+<button class="flex-1 py-sm rounded-lg border border-outline-variant flex items-center justify-center gap-xs font-body-md text-body-md text-on-surface hover:bg-surface-container-low transition-colors">
+<div class="w-2 h-2 rounded-full bg-outline"></div> Low
+                    </button>
+<button class="flex-1 py-sm rounded-lg bg-secondary-container border border-secondary-container flex items-center justify-center gap-xs font-body-md text-body-md text-on-secondary-container transition-colors font-medium">
+<div class="w-2 h-2 rounded-full bg-on-secondary-container"></div> Med
+                    </button>
+<button class="flex-1 py-sm rounded-lg border border-outline-variant flex items-center justify-center gap-xs font-body-md text-body-md text-on-surface hover:bg-surface-container-low transition-colors">
+<div class="w-2 h-2 rounded-full bg-error"></div> High
+                    </button>
+</div>
+</section>
+<!-- Date Picker -->
+<section class="col-span-1 bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex flex-col justify-between aspect-square hover:bg-surface-container-lowest transition-all cursor-pointer group">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Due Date</span>
+<div class="flex flex-col gap-xs">
+<span class="material-symbols-outlined text-[32px] text-primary group-hover:scale-110 transition-transform">calendar_month</span>
+<span class="font-headline-sm text-headline-sm-mobile text-on-surface mt-sm">Today</span>
+</div>
+</section>
+<!-- Time Picker -->
+<section class="col-span-1 bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex flex-col justify-between aspect-square hover:bg-surface-container-lowest transition-all cursor-pointer group">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Reminder</span>
+<div class="flex flex-col gap-xs">
+<span class="material-symbols-outlined text-[32px] text-primary group-hover:scale-110 transition-transform">schedule</span>
+<span class="font-headline-sm text-headline-sm-mobile text-on-surface mt-sm">None</span>
+</div>
+</section>
+<!-- Project/Workspace -->
+<section class="col-span-2 bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">folder</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Workspace</span>
+<span class="font-body-lg text-body-lg text-on-surface font-medium">Personal Projects</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</section>
+<!-- Tags -->
+<section class="col-span-2 bg-surface-container-lowest rounded-[16px] shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex flex-col gap-md overflow-hidden">
+<div class="flex justify-between items-center w-full">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Tags</span>
+<button class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+<div class="flex gap-sm overflow-x-auto pb-sm snap-x w-full -mx-md px-md scrollbar-hide">
+<div class="snap-start shrink-0 px-md py-sm rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-primary"></div> Design
+                    </div>
+<div class="snap-start shrink-0 px-md py-sm rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div> Research
+                    </div>
+<div class="snap-start shrink-0 px-md py-sm rounded-full border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors cursor-pointer">
+                        Client X
+                    </div>
+<div class="snap-start shrink-0 px-md py-sm rounded-full border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-colors cursor-pointer">
+                        Urgent
+                    </div>
+</div>
+</section>
+</div>
+</main>
+<!-- Floating Action Button / Fixed Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full bg-surface border-t border-surface-variant p-margin-mobile flex justify-center z-50">
+<button class="w-full max-w-[568px] bg-[#4F46E5] text-white h-14 rounded-full font-headline-sm text-headline-sm-mobile flex items-center justify-center gap-sm active:scale-[0.98] transition-transform shadow-[0px_4px_12px_rgba(79,70,229,0.3)]">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">check_circle</span>
+            Save Task
+        </button>
+</div>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</body></html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Center - CaptureFlow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f7f9fb",
+                        "inverse-primary": "#2cdbe0",
+                        "tertiary-container": "#55e4a8",
+                        "secondary-container": "#6df5e1",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "tertiary": "#006c49",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary": "#006b5f",
+                        "primary-container": "#37e1e6",
+                        "secondary-fixed-dim": "#4fdbc8",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "inverse-surface": "#2d3133",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#002021",
+                        "primary-fixed-dim": "#2cdbe0",
+                        "primary": "#00696c",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed": "#71f8e4",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-tint": "#00696c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005048",
+                        "on-secondary-container": "#006f64",
+                        "on-primary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-tertiary-container": "#006343",
+                        "surface-dim": "#d8dadc",
+                        "primary-fixed": "#59f8fd",
+                        "surface-container-highest": "#e0e3e5",
+                        "outline": "#6b7a7a",
+                        "outline-variant": "#bac9c9",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e0e3e5",
+                        "on-primary-container": "#006063",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#3b494a",
+                        "on-primary-fixed-variant": "#004f51",
+                        "inverse-on-surface": "#eff1f3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "2xl": "48px",
+                        "sm": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "lg": "24px",
+                        "3xl": "64px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen font-body-md antialiased">
+<!-- Header (No TopAppBar as this might be a sub-page, but implementing a clean header for the Notification context) -->
+<header class="bg-surface sticky top-0 z-40 w-full px-margin-mobile md:px-margin-desktop py-lg flex justify-between items-center shadow-[0px_4px_12px_rgba(0,0,0,0.02)]">
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors active:scale-95 text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-on-surface">Notifications</h1>
+</div>
+<button class="font-label-md text-label-md text-primary hover:bg-surface-container-low px-sm py-xs rounded transition-colors active:scale-95">
+            Mark all as read
+        </button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-xl flex flex-col gap-2xl pb-32">
+<!-- Section: AI Suggestions -->
+<section class="flex flex-col gap-md">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider pl-sm">AI Suggestions</h2>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-lg flex items-start gap-md hover:shadow-[0px_8px_24px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="flex-1 flex flex-col gap-xs">
+<div class="flex justify-between items-baseline">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Optimize Schedule</h3>
+<span class="font-label-md text-label-md text-on-surface-variant">Just now</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant">I noticed back-to-back meetings this afternoon. Would you like to add a 15-minute buffer between them?</p>
+<div class="flex gap-sm mt-sm">
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">Apply</button>
+<button class="bg-surface-container-low text-on-surface font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-surface-container transition-colors">Dismiss</button>
+</div>
+</div>
+<!-- Unread Indicator -->
+<div class="w-2 h-2 rounded-full bg-primary mt-2"></div>
+</div>
+</section>
+<!-- Section: Upcoming Reminders -->
+<section class="flex flex-col gap-md">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider pl-sm">Upcoming Reminders</h2>
+<div class="flex flex-col gap-xs">
+<!-- Reminder Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex items-center gap-md hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+</div>
+<div class="flex-1 flex flex-col">
+<h3 class="font-body-lg text-body-lg text-on-surface font-medium">Q3 Strategy Review</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Starts in 30 minutes • Boardroom A</p>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">10:00 AM</span>
+</div>
+<!-- Reminder Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] p-md flex items-center gap-md hover:bg-surface-container-low transition-colors duration-200 cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-1 flex flex-col">
+<h3 class="font-body-lg text-body-lg text-on-surface font-medium">Submit Expense Report</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Due today by 5:00 PM</p>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">9:00 AM</span>
+</div>
+</div>
+</section>
+<!-- Section: Recent Activity -->
+<section class="flex flex-col gap-md">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider pl-sm">Recent Activity</h2>
+<div class="flex flex-col gap-xs">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-md flex items-start gap-md opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a woman with short brown hair, wearing a dark blazer, smiling slightly, set against a blurred modern office background with light mode aesthetics, soft natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM6Y56QOYkkoEAl8adYHfddzbYG7sdgwSY9_O-berwnZNhYqSfn-yHlVXyNBoWrOll1Az_tzZ9ld9iqzs1Y0OK8bI5xOmFbSCcFZxue3oVe3GSJ3DueXjOLWo-n7rqfn7zt6evZFzAQ-Jtlb9In98yMngb4r8tLpglBayf-g1b9MLImocYJj1i3vloCSWH0ljSArjY_ekKbBdgUiqkY_4zpAdgu1H1Fg1SvsAOn750G5VuuQWNS8yEFlNSaLLazgvhMPx24ic0Nwfk"/>
+</div>
+<div class="flex-1 flex flex-col">
+<p class="font-body-lg text-body-lg text-on-surface"><span class="font-medium">Sarah Jenkins</span> commented on <span class="font-medium">Project Alpha Brief</span></p>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1">"Looks good to me, just one minor edit on page 3..."</p>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">Yesterday</span>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md flex items-start gap-md opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+<div class="w-8 h-8 rounded-full flex-shrink-0 bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+</div>
+<div class="flex-1 flex flex-col">
+<p class="font-body-lg text-body-lg text-on-surface"><span class="font-medium">System</span> archived <span class="font-medium">Old Notes Q1</span></p>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-1">Automated cleanup based on your settings.</p>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">Mon</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Suppressed BottomNavBar as this is a specific screen, not a main destination -->
+</body></html>

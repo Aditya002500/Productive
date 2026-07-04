@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>CaptureFlow - Note Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "background": "#f7f9fb",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#2cdbe0",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface": "#191c1e",
+                    "surface-dim": "#d8dadc",
+                    "outline-variant": "#bac9c9",
+                    "secondary-container": "#6df5e1",
+                    "surface": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-fixed": "#6ffbbe",
+                    "secondary-fixed": "#71f8e4",
+                    "secondary-fixed-dim": "#4fdbc8",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-bright": "#f7f9fb",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "outline": "#6b7a7a",
+                    "tertiary": "#006c49",
+                    "on-secondary-fixed-variant": "#005048",
+                    "on-primary-container": "#006063",
+                    "on-primary-fixed-variant": "#004f51",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-background": "#191c1e",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container": "#eceef0",
+                    "primary-fixed": "#59f8fd",
+                    "primary-container": "#37e1e6",
+                    "on-tertiary-container": "#006343",
+                    "on-secondary-fixed": "#00201c",
+                    "surface-tint": "#00696c",
+                    "primary": "#00696c",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#2cdbe0",
+                    "secondary": "#006b5f",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary-container": "#006f64",
+                    "tertiary-container": "#55e4a8",
+                    "on-primary-fixed": "#002021",
+                    "on-surface-variant": "#3b494a",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "2xl": "48px",
+                    "margin-desktop": "32px",
+                    "lg": "24px",
+                    "base": "8px",
+                    "3xl": "64px",
+                    "md": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "display-lg-mobile": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg-mobile": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .custom-cursor {
+            caret-color: #37e1e6;
+        }
+        /* Custom Checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: transparent;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bac9c9;
+            border-radius: 50%;
+            display: grid;
+            place-content: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        input[type="checkbox"]::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            background-color: white;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: #37e1e6;
+            border-color: #37e1e6;
+        }
+
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (Transactional - Nav hidden, Back action present) -->
+<header class="flex justify-between items-center px-margin-mobile h-16 z-50 bg-surface dark:bg-background fixed top-0 w-full flat no shadows">
+<button class="text-on-surface-variant hover:bg-surface-container active:scale-95 transition-transform duration-200 p-2 -ml-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="flex gap-2">
+<button class="text-on-surface-variant hover:bg-surface-container active:scale-95 transition-transform duration-200 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<button class="text-primary hover:bg-surface-container active:scale-95 transition-transform duration-200 p-2 -mr-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined font-semibold" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-[88px] pb-[120px] px-margin-mobile flex flex-col gap-lg max-w-[800px] w-full mx-auto custom-cursor">
+<!-- Title Area -->
+<div class="w-full">
+<textarea class="w-full bg-transparent border-none p-0 focus:ring-0 resize-none font-display-lg-mobile text-display-lg-mobile text-on-surface placeholder:text-surface-dim custom-cursor overflow-hidden" placeholder="Note Title..." rows="2">Product Launch Notes</textarea>
+</div>
+<!-- Tags / Meta -->
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="calendar_today">calendar_today</span> Oct 24
+            </span>
+<span class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="tag">tag</span> marketing
+            </span>
+</div>
+<!-- Editor Body (Simulated) -->
+<div class="flex flex-col gap-lg w-full font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+<p class="custom-cursor focus:outline-none" contenteditable="true">
+                Here are the initial thoughts for the upcoming Q4 campaign. We need to focus heavily on the new features introduced in v2.0, specifically the AI integration and the revised layout engine.
+            </p>
+<p class="custom-cursor focus:outline-none" contenteditable="true">
+                The core messaging should revolve around <strong>speed</strong> and <em>simplicity</em>.
+            </p>
+<!-- Checklist -->
+<div class="flex flex-col gap-4 py-sm">
+<div class="flex items-start gap-3">
+<input checked="" class="mt-1 flex-shrink-0 cursor-pointer" type="checkbox"/>
+<span class="text-outline line-through custom-cursor focus:outline-none" contenteditable="true">Finalize copy for landing page</span>
+</div>
+<div class="flex items-start gap-3">
+<input class="mt-1 flex-shrink-0 cursor-pointer" type="checkbox"/>
+<span class="custom-cursor focus:outline-none" contenteditable="true">Approve hero assets from design team</span>
+</div>
+<div class="flex items-start gap-3">
+<input class="mt-1 flex-shrink-0 cursor-pointer" type="checkbox"/>
+<span class="text-primary custom-cursor focus:outline-none" contenteditable="true">Schedule kickoff meeting</span>
+</div>
+</div>
+<!-- Image Block -->
+<div class="rounded-xl overflow-hidden shadow-[0px_4px_12px_rgba(0,0,0,0.05)] bg-surface-container-lowest my-2 group relative">
+<img class="w-full h-48 object-cover" data-alt="A clean, modern minimal workspace setup viewed from directly above. A sleek laptop, a plain white notebook, and a ceramic mug of black coffee sit on a smooth light wood desk. The lighting is soft, diffused, high-key natural daylight creating a bright and airy atmosphere. The color palette focuses on neutral whites, warm woods, and stark blacks." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5qGqtlSzO-yKuwc2BfyP8GdfzYMPRsnqxxljB_u-DNIbi67Z4DI4aSWNcb_BOL0QHzfk3ew-IwLeN-Hk7A049iOD4c1zr_yJaYcibIOOCP6iFLFjVrSMh1cCr9pvpu65JvAnQeplTr_O-UqUjpALQjtlLltrDQRfb-O86bJBSt_p5Rgl5TJcntp9hYbXE1LI0o88rc-jTazmsV9X87xeVv4oB8UEat8Ysj9gTJzrNWYCiNgg616m0HLzd_2efmpvYkBpkdL76tx2O"/>
+<div class="p-3 bg-surface-container-lowest border-t border-surface-container-high">
+<p class="font-label-md text-label-md text-outline text-center custom-cursor focus:outline-none" contenteditable="true">Proposed hero image aesthetic for the new site.</p>
+</div>
+<!-- Image controls (simulate hover/tap) -->
+<button class="absolute top-2 right-2 bg-inverse-surface/80 text-inverse-on-surface p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+</div>
+<p class="custom-cursor focus:outline-none" contenteditable="true">
+                For the developer integration section, let's use the following snippet as an example of how easy the API is to hit:
+            </p>
+<!-- Code Block -->
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl p-4 font-mono text-[13px] overflow-x-auto my-2 relative group">
+<pre><code class="language-javascript">const captureFlow = new CaptureFlow({
+  apiKey: process.env.CF_KEY,
+  environment: 'production'
+});
+
+async function saveNote(data) {
+  try {
+    const res = await captureFlow.notes.create(data);
+    return res.id;
+  } catch (err) {
+    console.error("Save failed:", err);
+  }
+}</code></pre>
+<button class="absolute top-2 right-2 text-surface-variant hover:text-white transition-colors opacity-0 group-hover:opacity-100 p-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<p class="custom-cursor focus:outline-none mb-12" contenteditable="true">
+                Let's review these points by Friday.
+            </p>
+</div>
+</main>
+<!-- Floating Editor Toolbar (Bottom, just above virtual keyboard area) -->
+<div class="fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest border-t border-surface-container shadow-[0px_-4px_12px_rgba(0,0,0,0.05)] pb-safe-area">
+<div class="flex justify-between items-center px-4 py-2 overflow-x-auto gap-2 scrollbar-hide">
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center bg-surface-container-low text-primary">
+<span class="material-symbols-outlined" data-icon="format_bold">format_bold</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="format_italic">format_italic</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="format_underline">format_underlined</span>
+</button>
+</div>
+<div class="w-px h-6 bg-surface-variant mx-1"></div>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="format_list_bulleted">format_list_bulleted</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center text-primary bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="checklist">checklist</span>
+</button>
+</div>
+<div class="w-px h-6 bg-surface-variant mx-1"></div>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="image">image</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+</button>
+</div>
+<div class="ml-auto">
+<button class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low active:bg-surface-container transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="keyboard_hide">keyboard_hide</span>
+</button>
+</div>
+</div>
+</div>
+<style>
+        /* Hide scrollbar for toolbar */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Handle safe area for modern mobile browsers */
+        .pb-safe-area {
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+        }
+    </style>
+<script>
+        // Auto-resize textarea for title
+        const titleTextarea = document.querySelector('textarea');
+        titleTextarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        // Initial sizing
+        titleTextarea.style.height = 'auto';
+        titleTextarea.style.height = (titleTextarea.scrollHeight) + 'px';
+    </script>
+</body></html>

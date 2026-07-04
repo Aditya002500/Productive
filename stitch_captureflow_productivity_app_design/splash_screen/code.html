@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CaptureFlow Splash Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-dim": "#d8dadc", "surface-container-high": "#e6e8ea", "surface-container-lowest": "#ffffff", "secondary-fixed": "#71f8e4", "surface-container-low": "#f2f4f6", "on-primary-container": "#4ff1f6", "surface-variant": "#e0e3e5", "primary-container": "#006b6e", "surface-tint": "#00696c", "primary-fixed": "#59f8fd", "on-primary-fixed": "#002021", "tertiary-container": "#006e4b", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#4edea3", "surface-container-highest": "#e0e3e5", primary: "#005153", "tertiary-fixed": "#6ffbbe", "secondary-fixed-dim": "#4fdbc8", "on-error-container": "#93000a", "on-secondary-fixed": "#00201c", "on-surface": "#191c1e", "outline-variant": "#c7c4d8", "on-error": "#ffffff", "on-background": "#191c1e", "inverse-surface": "#2d3133", "on-primary-fixed-variant": "#004f51", "secondary-container": "#6df5e1", "primary-fixed-dim": "#2cdbe0", "on-tertiary-container": "#67f4b7", "on-primary": "#ffffff", "error-container": "#ffdad6", "on-tertiary-fixed": "#002113", error: "#ba1a1a", "on-tertiary-fixed-variant": "#005236", outline: "#777587", "on-secondary": "#ffffff", "inverse-primary": "#2cdbe0", "on-secondary-fixed-variant": "#005048", secondary: "#006b5f", surface: "#f7f9fb", "surface-bright": "#f7f9fb", "inverse-on-surface": "#eff1f3", "on-secondary-container": "#006f64", "surface-container": "#eceef0", background: "#f7f9fb", "on-surface-variant": "#464555", tertiary: "#005338"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {sm: "8px", md: "16px", base: "8px", "2xl": "48px", xs: "4px", "margin-desktop": "32px", "margin-mobile": "16px", lg: "24px", gutter: "16px", "3xl": "64px", xl: "32px"}, fontFamily: {"display-lg-mobile": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "label-caps": ["Inter"], "body-md": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"display-lg-mobile": ["28px", {lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-lg": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-caps": ["11px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-sm": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["12px", {lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "500"}]}}}};</script>
+<style>
+        .splash-animation {
+            animation: pulse-glow 3s infinite alternate ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0% { opacity: 0.8; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#F8FAFC] text-on-background h-screen w-screen overflow-hidden flex flex-col justify-between items-center relative font-body-md">
+<!-- Decorative Top Element -->
+<div class="w-full flex justify-center mt-xl fade-in-up" style="animation-delay: 0.2s;">
+<!-- Space for status bar content if needed -->
+</div>
+<!-- Main Center Content -->
+<main class="flex flex-col items-center justify-center flex-1 z-10 w-full px-margin-mobile fade-in-up" style="animation-delay: 0.4s;">
+<!-- Logo Section -->
+<div class="relative splash-animation mb-lg">
+<div class="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 z-0"></div>
+<img alt="CaptureFlow Logo" class="w-32 h-32 object-contain relative z-10 rounded-md" src="https://lh3.googleusercontent.com/aida/AP1WRLvioOHBLAnoi9rs2otwVh9yjyZjWkl0tR_ld-I-yTZhgQsS7treUP_aStJJtACtxFQU8vZ572yXP3Ox06nUeN-CdFsHMDiPoZyrUGih6rtG0XOuycSZUh-2CjH4U7TBVoRQYyFomtvRKKpvaeNMcK1_NJjHrqpbwgcehviZHE34ezhiiWLqZO70UxyeUNtDFgk4JWNbB4GtOrS8KN9Fw7QRwA2_sETh2gzhDNcDxkTlP9rWE-pPprz56KNI"/>
+</div>
+<!-- Abstract Line Illustration (Subtle, SVG) -->
+<div class="w-full max-w-sm mt-md opacity-40">
+<svg class="w-full h-auto" fill="none" viewbox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+<path d="M 10 50 C 50 10, 100 90, 150 50 C 200 10, 250 90, 300 50 C 350 10, 390 50, 390 50" stroke="url(#paint0_linear)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M 50 80 C 100 20, 150 80, 200 40 C 250 0, 300 80, 350 30" opacity="0.5" stroke="url(#paint1_linear)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="paint0_linear" x1="0" x2="400" y1="50" y2="50">
+<stop stop-color="#4F46E5" stop-opacity="0"></stop>
+<stop offset="0.5" stop-color="#4F46E5"></stop>
+<stop offset="1" stop-color="#4F46E5" stop-opacity="0"></stop>
+</lineargradient>
+<lineargradient gradientunits="userSpaceOnUse" id="paint1_linear" x1="0" x2="400" y1="40" y2="40">
+<stop stop-color="#14B8A6" stop-opacity="0"></stop>
+<stop offset="0.5" stop-color="#14B8A6"></stop>
+<stop offset="1" stop-color="#14B8A6" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mt-xl tracking-tight text-center">
+            Welcome to Flow
+        </h1>
+</main>
+<!-- Footer Text -->
+<footer class="pb-xl w-full text-center fade-in-up" style="animation-delay: 0.6s; z-index: 10;">
+<p class="font-label-md text-label-md text-[#6B7280]">
+            Powered by Screenshot Intelligence
+        </p>
+</footer>
+<!-- Minimalistic Background Accents -->
+<div class="fixed top-[-10%] left-[-10%] w-1/2 h-1/2 bg-primary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+<div class="fixed bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-secondary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+<script>
+        // Simple logic to transition out after a delay (simulating splash screen behavior)
+        setTimeout(() => {
+            document.body.style.transition = "opacity 0.5s ease-out";
+            document.body.style.opacity = "0";
+            // In a real app, this would route to the next screen
+            // window.location.href = '/home';
+        }, 3500);
+    </script>
+</body></html>

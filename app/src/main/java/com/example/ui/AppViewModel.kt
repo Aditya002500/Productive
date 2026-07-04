@@ -207,7 +207,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             timestamp = "Just now",
                             imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDWo0nXbI4jGDDhYEx368xutDv5ryO7Dz845tgSXnU5txbjfo_KPY-hd4sb-Y3106K3hiw_aptsEm1LonW0_46p4FbOY3W3bpYic4u9Ow7pkJmqNX6L1NzqQm9yZ8jyTxG9G2pqPzyWw9nOjd4_x1PXfBYL1oQ1fRbWepT-NIOclRWalIUim5UynoFNa0m_vWmtiVnO5bFf2UtC7_pRNULBhvEv-bN41UnkxY57y7steoQWhO705_rXq2-JBEAGqd3X7KH40unzj_sq",
                             category = "UI Ref",
-                            extractedText = "Competitor Dashboard Analytics\nConversion Rate: 2.1%\nTotal Impressions: 2.4M\nSubtask checklist parsed."
+                            extractedText = "Competitor Dashboard Analytics\nConversion Rate: 2.1%\nTotal Impressions: 2.4M\nSubtask checklist parsed.",
+                            status = "Needs Review",
+                            summary = "This screenshot captures a competitor's analytics dashboard. It highlights a 2.1% conversion rate which we need to compare against our internal benchmarks."
                         )
                     )
                     // Auto extract a related task
@@ -231,7 +233,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             timestamp = "Just now",
                             imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDio1a8BCNTqsmXX9kFnMEYKllm2IdqM9Mj4E_AA-3BUguBB7JajMZ4gpV_rBvVt8f4ejfp5TRC-mEWT_iemFRyHTSMhbj4B0v-1isXR8DZfGj2LFvLWvDXxH8bFmgFxLVb5GNf6fA8DmPxdFNoxoWProWXkB5N-VnLdhHPbNiRDbK7i658D8Dm3CFGCR2pde6C4sU-s8O5s0ufV7ZMIAi_1KuOaocTw2LNn8nRilz52eQn9Xx4sKS4_3DZz-qq7CiJvI45waVzvB8i",
                             category = "Expense",
-                            extractedText = "RECEIPT\nOct 24, 2023\nTotal: $189.00\nSoftware subscriptions renew auto."
+                            extractedText = "RECEIPT\nOct 24, 2023\nTotal: $189.00\nSoftware subscriptions renew auto.",
+                            status = "Processed",
+                            summary = "An invoice for software subscriptions totaling $189.00 on Oct 24. A quick note has been automatically created for expense reporting."
                         )
                     )
                     // Auto extract a quick note about invoice
@@ -252,7 +256,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             timestamp = "Just now",
                             imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAv3Ikcvxs9LpXSht19aYj11keLgxDy3jV3YkneAlX43NMXAT2sQZnt9fkvB4z-1XQxb_zCW4ZQU_cAf5IWgByWjcL_SqTD3CJp47Vmq3wpjNomsNjy0s9ziMIhLL_rtsPWFcGo3wSbromsAl5z7Dr5r1b1f2kamsIE4TGN6YJkDG-4jsi2AG19IUZ9AJvNhflJihDEF68ZgdtU9LiMTetSsvhGzT4llDGYobhkyVR4fQxJlPs85aMI9SPclB3M0RTPx28Q6hvaCWpz",
                             category = "Snippet",
-                            extractedText = "class AuthenticationHelper {\n  fun authenticateToken() {\n    // Extracted secure token validation rules\n  }\n}"
+                            extractedText = "class AuthenticationHelper {\n  fun authenticateToken() {\n    // Extracted secure token validation rules\n  }\n}",
+                            status = "Failed OCR",
+                            summary = "Code snippet related to token authentication. OCR confidence is low due to poor contrast."
                         )
                     )
                     // Auto extract an event

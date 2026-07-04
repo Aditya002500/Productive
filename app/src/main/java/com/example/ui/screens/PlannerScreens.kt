@@ -34,12 +34,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.EventEntity
 import com.example.ui.AppViewModel
+import com.example.ui.components.TexturedBackground
+import com.example.ui.components.CaptureFlowBottomNavigation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
     viewModel: AppViewModel,
     initialTab: String = "day",
+    onNavigateBottomBar: (String) -> Unit,
     onBack: () -> Unit
 ) {
     var activeSubTab by remember { mutableStateOf(initialTab) } // "day", "week", "month"
@@ -61,16 +64,13 @@ fun PlannerScreen(
                         Icon(Icons.Default.Add, contentDescription = "Add Event")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         bottomBar = {
             CaptureFlowBottomNavigation(
-                activeTab = "planner",
-                onTabClick = { tab ->
-                    if (tab == "home") onBack()
-                    else if (tab == "planner") { /* Already here */ }
-                }
+                currentRoute = "planner",
+                onNavigate = onNavigateBottomBar
             )
         }
     ) { innerPadding ->
@@ -96,7 +96,7 @@ fun PlannerScreen(
                             .weight(1f)
                             .height(38.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) Color.White else Color.Transparent)
+                            .background(if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent)
                             .clickable { activeSubTab = tabKey }
                             .testTag("planner_tab_$tabKey"),
                         contentAlignment = Alignment.Center
@@ -179,7 +179,7 @@ fun PlannerScreen(
 
                     Text("Color Tag:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        listOf(Color(0xFF00696C), Color(0xFF006B5F), Color(0xFF006C49), Color(0xFFBA1A1A)).forEachIndexed { idx, color ->
+                        listOf(Color(0xFF065F46), Color(0xFF047857), Color(0xFF059669), Color(0xFF10B981)).forEachIndexed { idx, color ->
                             Box(
                                 modifier = Modifier
                                     .size(32.dp)
@@ -294,10 +294,10 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 oct24Events.forEach { event ->
                     val containerColor = when (event.color) {
-                        0 -> Color(0xFFE0F2F1) // Teal light
-                        1 -> Color(0xFFF3E5F5) // Purple light
-                        2 -> Color(0xFFE8F5E9) // Green light
-                        else -> Color(0xFFFFEBEE) // Orange/Red light
+                        0 -> Color(0xFFD1FAE5) // Emerald light
+                        1 -> Color(0xFFECFCCB) // Lime light
+                        2 -> Color(0xFFDCFCE7) // Green light
+                        else -> Color(0xFFCCFBF1) // Teal light
                     }
 
                     val accentColor = when (event.color) {
@@ -395,7 +395,7 @@ fun WeekView(events: List<EventEntity>) {
             val dayEvents = events.filter { it.day == dayNum && it.monthName == "October" }
 
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -570,7 +570,7 @@ fun MonthView(events: List<EventEntity>) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 monthEvents.forEach { event ->
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
