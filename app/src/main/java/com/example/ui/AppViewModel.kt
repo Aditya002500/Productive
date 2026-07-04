@@ -9,8 +9,16 @@ import com.example.data.ai.AiService
 import com.example.data.ai.OcrService
 import com.example.data.repository.AppRepository
 import com.example.ui.theme.ThemeMode
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: AppRepository
@@ -56,12 +64,129 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val captures: StateFlow<List<CaptureEntity>>
     val events: StateFlow<List<EventEntity>>
 
+    // One-shot draft carried from "Create Task" quick actions (e.g. AI Summary) into CreateTaskScreen.
+    private val _taskDraftTitle = MutableStateFlow<String?>(null)
+    val taskDraftTitle: StateFlow<String?> = _taskDraftTitle.asStateFlow()
+
+    fun prefillTaskDraft(title: String) {
+        _taskDraftTitle.value = title
+    }
+
+    fun consumeTaskDraft() {
+        _taskDraftTitle.value = null
+    }
+
     // User profile state
     private val _userProfileName = MutableStateFlow("Alex")
     val userProfileName: StateFlow<String> = _userProfileName.asStateFlow()
 
     private val _userProfileEmail = MutableStateFlow("you@example.com")
     val userProfileEmail: StateFlow<String> = _userProfileEmail.asStateFlow()
+
+    // Authentication (Firebase Auth — email/password + Google Sign-In)
+    private val firebaseAuth = FirebaseAuth.getInstance()
+
+    val isLoggedIn: Boolean get() = firebaseAuth.currentUser != null
+
+    private val _authError = MutableStateFlow<String?>(null)
+    val authError: StateFlow<String?> = _authError.asStateFlow()
+
+    private val _isAuthLoading = MutableStateFlow(false)
+    val isAuthLoading: StateFlow<Boolean> = _isAuthLoading.asStateFlow()
+
+    fun clearAuthError() {
+        _authError.value = null
+    }
+
+    fun signInWithEmail(email: String, password: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            _isAuthLoading.value = true
+            _authError.value = null
+            try {
+                firebaseAuth.signInWithEmailAndPassword(email, password).await()
+                syncProfileFromFirebaseUser()
+                onResult(true)
+            } catch (e: Exception) {
+                _authError.value = e.toAuthMessage()
+                onResult(false)
+            } finally {
+                _isAuthLoading.value = false
+            }
+        }
+    }
+
+    fun registerWithEmail(name: String, email: String, password: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            _isAuthLoading.value = true
+            _authError.value = null
+            try {
+                firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+                firebaseAuth.currentUser?.updateProfile(
+                    userProfileChangeRequest { displayName = name }
+                )?.await()
+                syncProfileFromFirebaseUser(fallbackName = name)
+                onResult(true)
+            } catch (e: Exception) {
+                _authError.value = e.toAuthMessage()
+                onResult(false)
+            } finally {
+                _isAuthLoading.value = false
+            }
+        }
+    }
+
+    fun signInWithGoogleIdToken(idToken: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            _isAuthLoading.value = true
+            _authError.value = null
+            try {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                firebaseAuth.signInWithCredential(credential).await()
+                syncProfileFromFirebaseUser()
+                onResult(true)
+            } catch (e: Exception) {
+                _authError.value = e.toAuthMessage()
+                onResult(false)
+            } finally {
+                _isAuthLoading.value = false
+            }
+        }
+    }
+
+    fun sendPasswordReset(email: String, onResult: (success: Boolean, message: String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                firebaseAuth.sendPasswordResetEmail(email).await()
+                onResult(true, "Password reset email sent to $email.")
+            } catch (e: Exception) {
+                onResult(false, e.toAuthMessage())
+            }
+        }
+    }
+
+    fun signOut() {
+        firebaseAuth.signOut()
+        _userProfileName.value = "Alex"
+        _userProfileEmail.value = "you@example.com"
+    }
+
+    private fun syncProfileFromFirebaseUser(fallbackName: String? = null) {
+        val user = firebaseAuth.currentUser ?: return
+        val name = user.displayName?.takeIf { it.isNotBlank() }
+            ?: fallbackName
+            ?: user.email?.substringBefore("@")?.replaceFirstChar { it.uppercase() }
+            ?: "User"
+        _userProfileName.value = name
+        _userProfileEmail.value = user.email ?: ""
+    }
+
+    private fun Exception.toAuthMessage(): String = when (this) {
+        is FirebaseAuthWeakPasswordException -> "Password is too weak — use at least 6 characters."
+        is FirebaseAuthUserCollisionException -> "An account with this email already exists."
+        is FirebaseAuthInvalidCredentialsException -> "Incorrect email or password."
+        is FirebaseAuthInvalidUserException -> "No account found for this email."
+        else -> localizedMessage ?: "Something went wrong. Please try again."
+    }
 
     // Screen states
     private val _searchQuery = MutableStateFlow("")
@@ -109,6 +234,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.prepopulateIfEmpty()
         }
+
+        // If a Firebase session already exists (app relaunch), reflect it immediately.
+        syncProfileFromFirebaseUser()
     }
 
     fun updateProfile(name: String, email: String) {
@@ -188,6 +316,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun addNote(title: String, content: String, date: String = "Oct 24") {
         viewModelScope.launch {
             repository.insertNote(NoteEntity(title = title, content = content, date = date))
+        }
+    }
+
+    /** Creates a new note, or replaces an existing one in place when [id] is non-null. */
+    fun saveNote(id: Int?, title: String, content: String, date: String = "Today") {
+        viewModelScope.launch {
+            repository.insertNote(NoteEntity(id = id ?: 0, title = title, content = content, date = date))
         }
     }
 

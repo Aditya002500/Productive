@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -18,8 +20,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.ui.AppViewModel
+import com.example.ui.auth.GoogleSignInResult
+import com.example.ui.auth.requestGoogleIdToken
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
@@ -27,11 +33,24 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
-    var fullName by remember { mutableStateOf("John Doe") }
-    var email by remember { mutableStateOf("john@example.com") }
-    var password by remember { mutableStateOf("password") }
-    var confirmPassword by remember { mutableStateOf("password") }
-    var showError by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var validationError by remember { mutableStateOf("") }
+    var infoDialogMessage by remember { mutableStateOf<String?>(null) }
+    var showGoogleSetupDialog by remember { mutableStateOf(false) }
+
+    val authError by viewModel.authError.collectAsStateWithLifecycle()
+    val isAuthLoading by viewModel.isAuthLoading.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    fun clearErrors() {
+        validationError = ""
+        viewModel.clearAuthError()
+    }
 
     Box(
         modifier = Modifier
@@ -93,7 +112,7 @@ fun RegisterScreen(
 
                 OutlinedTextField(
                     value = fullName,
-                    onValueChange = { fullName = it; showError = "" },
+                    onValueChange = { fullName = it; clearErrors() },
                     placeholder = { Text("John Doe", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -123,7 +142,7 @@ fun RegisterScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it; showError = "" },
+                    onValueChange = { email = it; clearErrors() },
                     placeholder = { Text("you@example.com", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -154,7 +173,7 @@ fun RegisterScreen(
 
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it; showError = "" },
+                    onValueChange = { password = it; clearErrors() },
                     placeholder = { Text("••••••••", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -186,7 +205,7 @@ fun RegisterScreen(
 
                 OutlinedTextField(
                     value = confirmPassword,
-                    onValueChange = { confirmPassword = it; showError = "" },
+                    onValueChange = { confirmPassword = it; clearErrors() },
                     placeholder = { Text("••••••••", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -202,10 +221,11 @@ fun RegisterScreen(
                 )
             }
 
-            if (showError.isNotEmpty()) {
+            val displayedError = validationError.ifEmpty { authError ?: "" }
+            if (displayedError.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = showError,
+                    text = displayedError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.align(Alignment.Start)
@@ -217,19 +237,20 @@ fun RegisterScreen(
             // Submit Button
             Button(
                 onClick = {
-                    if (fullName.isBlank()) {
-                        showError = "Please enter your name."
-                    } else if (!email.contains("@")) {
-                        showError = "Please enter a valid email address."
-                    } else if (password.length < 6) {
-                        showError = "Password must be at least 6 characters."
-                    } else if (password != confirmPassword) {
-                        showError = "Passwords do not match."
-                    } else {
-                        viewModel.updateProfile(fullName, email)
-                        onRegisterSuccess()
+                    when {
+                        fullName.isBlank() -> validationError = "Please enter your name."
+                        !email.contains("@") -> validationError = "Please enter a valid email address."
+                        password.length < 6 -> validationError = "Password must be at least 6 characters."
+                        password != confirmPassword -> validationError = "Passwords do not match."
+                        else -> {
+                            validationError = ""
+                            viewModel.registerWithEmail(fullName, email, password) { success ->
+                                if (success) onRegisterSuccess()
+                            }
+                        }
                     }
                 },
+                enabled = !isAuthLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -240,9 +261,63 @@ fun RegisterScreen(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
+                if (isAuthLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Text(
+                        text = "Create Account",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // OR CONTINUE WITH divider
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
                 Text(
-                    text = "Create Account",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    text = "OR CONTINUE WITH",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Google Button
+            OutlinedButton(
+                onClick = {
+                    coroutineScope.launch {
+                        when (val result = requestGoogleIdToken(context)) {
+                            is GoogleSignInResult.Success -> {
+                                viewModel.signInWithGoogleIdToken(result.idToken) { success ->
+                                    if (success) onRegisterSuccess()
+                                }
+                            }
+                            is GoogleSignInResult.NotConfigured -> showGoogleSetupDialog = true
+                            is GoogleSignInResult.Cancelled -> { /* user backed out, nothing to show */ }
+                            is GoogleSignInResult.Failure -> infoDialogMessage = result.message
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            ) {
+                Text(
+                    text = "Continue with Google",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
 
@@ -272,5 +347,29 @@ fun RegisterScreen(
                 }
             }
         }
+    }
+
+    infoDialogMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { infoDialogMessage = null },
+            title = { Text("Sign-In Error") },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = { infoDialogMessage = null }) { Text("OK") } }
+        )
+    }
+
+    if (showGoogleSetupDialog) {
+        AlertDialog(
+            onDismissRequest = { showGoogleSetupDialog = false },
+            title = { Text("Google Sign-In needs setup") },
+            text = {
+                Text(
+                    "Google Sign-In hasn't been enabled for this project yet. Enable the \"Google\" " +
+                        "provider in Firebase Console → Authentication → Sign-in method, register this " +
+                        "app's SHA-1 fingerprint, then re-download google-services.json and rebuild."
+                )
+            },
+            confirmButton = { TextButton(onClick = { showGoogleSetupDialog = false }) { Text("Got it") } }
+        )
     }
 }

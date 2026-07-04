@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,9 +26,14 @@ fun CreateTaskScreen(
     viewModel: AppViewModel,
     onBack: () -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
+    val draftTitle by viewModel.taskDraftTitle.collectAsStateWithLifecycle()
+    var title by remember { mutableStateOf(draftTitle ?: "") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf("Med") }
+
+    LaunchedEffect(Unit) {
+        viewModel.consumeTaskDraft()
+    }
 
     Scaffold(
         topBar = {
@@ -54,9 +60,19 @@ fun CreateTaskScreen(
             ) {
                 Button(
                     onClick = {
-                        // TODO: Save task via viewModel
-                        onBack()
+                        if (title.isNotBlank()) {
+                            viewModel.addTask(
+                                title = title,
+                                priority = priority,
+                                dueDate = "Today",
+                                dueTime = "",
+                                notesContent = description,
+                                subtaskTitles = emptyList()
+                            )
+                            onBack()
+                        }
                     },
+                    enabled = title.isNotBlank(),
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .height(56.dp),

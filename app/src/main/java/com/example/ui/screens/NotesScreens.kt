@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.NoteEntity
 import com.example.ui.AppViewModel
 
@@ -28,25 +29,14 @@ import com.example.ui.AppViewModel
 fun NotesListScreen(
     viewModel: AppViewModel,
     onNavigateToEditor: (Int?) -> Unit,
-    onNavigateToDetail: (Int) -> Unit,
-    onBack: () -> Unit
+    onNavigateToDetail: (Int) -> Unit
 ) {
-    // Dummy Data for Preview
-    val notes = listOf(
-        NoteEntity(1, "Meeting Notes: Q3 Planning", "Discussed the new roadmap and assigned tasks to team members. Need to follow up with design.", "Today, 10:00 AM"),
-        NoteEntity(2, "Ideas for the New Campaign", "- Target demographic analysis\n- Ad spend budget review\n- Creative assets checklist", "Yesterday"),
-        NoteEntity(3, "Grocery List", "Milk, Eggs, Bread, Butter, Coffee beans.", "Oct 24")
-    )
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Notes", fontWeight = FontWeight.SemiBold, fontSize = 20.sp) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -110,8 +100,18 @@ fun NoteEditorScreen(
     viewModel: AppViewModel,
     onBack: () -> Unit
 ) {
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val existingNote = remember(noteId, notes) { notes.find { it.id == noteId } }
+
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
+
+    LaunchedEffect(existingNote?.id) {
+        if (existingNote != null) {
+            title = existingNote.title
+            content = existingNote.content
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -123,7 +123,17 @@ fun NoteEditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Save */ onBack() }) {
+                    IconButton(onClick = {
+                        if (title.isNotBlank() || content.isNotBlank()) {
+                            viewModel.saveNote(
+                                id = noteId,
+                                title = title.ifBlank { "Untitled" },
+                                content = content,
+                                date = existingNote?.date ?: "Today"
+                            )
+                        }
+                        onBack()
+                    }) {
                         Icon(Icons.Default.Check, contentDescription = "Save", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
@@ -179,10 +189,11 @@ fun NoteDetailScreen(
     onBack: () -> Unit,
     onEdit: (Int) -> Unit
 ) {
-    // Dummy Data
-    val title = "Meeting Notes: Q3 Planning"
-    val content = "Discussed the new roadmap and assigned tasks to team members. Need to follow up with design regarding the new assets for the upcoming launch.\n\nKey takeaways:\n1. Budget is approved.\n2. Design needs more time.\n3. Engineering is on track."
-    val date = "Today, 10:00 AM"
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val note = remember(noteId, notes) { notes.find { it.id == noteId } }
+    val title = note?.title ?: ""
+    val content = note?.content ?: ""
+    val date = note?.date ?: ""
 
     Scaffold(
         topBar = {

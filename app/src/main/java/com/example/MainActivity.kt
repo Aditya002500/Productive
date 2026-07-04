@@ -58,29 +58,14 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             startDestination = "splash"
                         ) {
-                            val onNavigateBottomBar: (String) -> Unit = { tab ->
-                                val route = when (tab) {
-                                    "home" -> "home"
-                                    "planner" -> "planner/day"
-                                    "capture" -> "capture_inbox"
-                                    "notes" -> "notes"
-                                    "search" -> "search"
-                                    else -> "home"
-                                }
-                                navController.navigate(route) {
-                                    popUpTo("home") {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
+
 
                             // Splash Screen
                             composable("splash") {
                                 SplashScreen(
                                     onTimeout = {
-                                        navController.navigate("welcome") {
+                                        val destination = if (appViewModel.isLoggedIn) "main" else "welcome"
+                                        navController.navigate(destination) {
                                             popUpTo("splash") { inclusive = true }
                                         }
                                     }
@@ -133,7 +118,7 @@ class MainActivity : ComponentActivity() {
                             composable("onboarding") {
                                 OnboardingFlow(
                                     onComplete = {
-                                        navController.navigate("home") {
+                                        navController.navigate("main") {
                                             popUpTo("onboarding") { inclusive = true }
                                         }
                                     },
@@ -143,12 +128,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            // Home Screen Dashboard
-                            composable("home") {
-                                HomeScreen(
+                            // Main Tabs Screen
+                            composable("main") {
+                                MainTabsScreen(
                                     viewModel = appViewModel,
-                                    onNavigateToSearch = { onNavigateBottomBar("search") },
-                                    onNavigateBottomBar = onNavigateBottomBar,
                                     onNavigateToTaskDetail = { taskId ->
                                         navController.navigate("task_detail/$taskId")
                                     },
@@ -159,36 +142,16 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("collections")
                                     },
                                     onNavigateToSettings = { navController.navigate("settings") },
-                                    onNavigateToNotifications = { navController.navigate("notifications") }
-                                )
-                            }
-
-                            // Planner Screen (Day, Week, Month calendar agendas)
-                            composable(
-                                route = "planner/{tab}",
-                                arguments = listOf(navArgument("tab") { type = NavType.StringType })
-                            ) { backStackEntry ->
-                                val tab = backStackEntry.arguments?.getString("tab") ?: "day"
-                                PlannerScreen(
-                                    viewModel = appViewModel,
-                                    initialTab = tab,
-                                    onNavigateBottomBar = onNavigateBottomBar,
-                                    onBack = {
-                                        navController.popBackStack()
-                                    }
-                                )
-                            }
-
-                            // Search Screen
-                            composable("search") {
-                                SearchScreen(
-                                    viewModel = appViewModel,
-                                    onNavigateToTaskDetail = { taskId ->
-                                        navController.navigate("task_detail/$taskId")
+                                    onNavigateToNotifications = { navController.navigate("notifications") },
+                                    onNavigateToNoteEditor = { noteId ->
+                                        if (noteId == null) navController.navigate("note_editor/-1")
+                                        else navController.navigate("note_editor/$noteId")
                                     },
-                                    onNavigateBottomBar = onNavigateBottomBar,
-                                    onBack = {
-                                        navController.popBackStack()
+                                    onNavigateToNoteDetail = { noteId ->
+                                        navController.navigate("note_detail/$noteId")
+                                    },
+                                    onNavigateToCaptureDetail = { captureId ->
+                                        navController.navigate("capture_detail/$captureId")
                                     }
                                 )
                             }
@@ -216,20 +179,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            // Notes List
-                            composable("notes") {
-                                NotesListScreen(
-                                    viewModel = appViewModel,
-                                    onNavigateToEditor = { noteId ->
-                                        if (noteId == null) navController.navigate("note_editor/-1")
-                                        else navController.navigate("note_editor/$noteId")
-                                    },
-                                    onNavigateToDetail = { noteId ->
-                                        navController.navigate("note_detail/$noteId")
-                                    },
-                                    onBack = { navController.popBackStack() }
-                                )
-                            }
+
 
                             // Note Editor
                             composable(
@@ -258,14 +208,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            // Capture Inbox
-                            composable("capture_inbox") {
-                                CaptureInboxScreen(
-                                    viewModel = appViewModel,
-                                    onNavigateToDetail = { captureId -> navController.navigate("capture_detail/$captureId") },
-                                    onBack = { navController.popBackStack() }
-                                )
-                            }
+
 
                             // Capture Detail
                             composable(
@@ -363,9 +306,10 @@ class MainActivity : ComponentActivity() {
                                     onBack = { navController.popBackStack() },
                                     onLogout = {
                                         navController.navigate("welcome") {
-                                            popUpTo("home") { inclusive = true }
+                                            popUpTo("main") { inclusive = true }
                                         }
-                                    }
+                                    },
+                                    onNavigateToSubscription = { navController.navigate("subscription") }
                                 )
                             }
                         }

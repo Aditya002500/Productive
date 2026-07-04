@@ -10,7 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +25,8 @@ fun SubscriptionScreen(
     viewModel: AppViewModel,
     onBack: () -> Unit
 ) {
+    var showComingSoon by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -104,7 +106,7 @@ fun SubscriptionScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* TODO */ },
+                onClick = { showComingSoon = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
@@ -116,14 +118,25 @@ fun SubscriptionScreen(
             }
 
             TextButton(
-                onClick = { /* TODO */ },
+                onClick = { showComingSoon = true },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
                 Text("Restore Purchases", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    if (showComingSoon) {
+        AlertDialog(
+            onDismissRequest = { showComingSoon = false },
+            title = { Text("Coming Soon") },
+            text = { Text("In-app billing isn't wired up yet, so purchases and restores aren't available in this build. All features work fully without a subscription for now.") },
+            confirmButton = {
+                TextButton(onClick = { showComingSoon = false }) { Text("Got it") }
+            }
+        )
     }
 }
 

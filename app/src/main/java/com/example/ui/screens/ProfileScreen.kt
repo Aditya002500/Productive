@@ -15,6 +15,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +37,8 @@ import com.example.ui.AppViewModel
 fun ProfileScreen(
     viewModel: AppViewModel,
     onBack: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onNavigateToSubscription: () -> Unit
 ) {
     val userName by viewModel.userProfileName.collectAsStateWithLifecycle()
     val userEmail by viewModel.userProfileEmail.collectAsStateWithLifecycle()
@@ -43,6 +47,7 @@ fun ProfileScreen(
 
     val tasksCompleted = tasks.count { it.isCompleted }
     val notesCreated = notes.size
+    var showSyncComingSoon by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -131,7 +136,7 @@ fun ProfileScreen(
                             }
                         }
                         Button(
-                            onClick = { },
+                            onClick = onNavigateToSubscription,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text("Manage")
@@ -211,7 +216,7 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Last synced: 2 mins ago", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        TextButton(onClick = { }) {
+                        TextButton(onClick = { showSyncComingSoon = true }) {
                             Text("Sync Now")
                         }
                     }
@@ -221,7 +226,7 @@ fun ProfileScreen(
             // Logout Action
             Box(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp), contentAlignment = Alignment.Center) {
                 Button(
-                    onClick = onLogout,
+                    onClick = { viewModel.signOut(); onLogout() },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.error)
                 ) {
                     Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -230,6 +235,17 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+
+    if (showSyncComingSoon) {
+        AlertDialog(
+            onDismissRequest = { showSyncComingSoon = false },
+            title = { Text("Coming Soon") },
+            text = { Text("Cloud sync isn't wired up yet — all your data is stored securely on this device only.") },
+            confirmButton = {
+                TextButton(onClick = { showSyncComingSoon = false }) { Text("Got it") }
+            }
+        )
     }
 }
 

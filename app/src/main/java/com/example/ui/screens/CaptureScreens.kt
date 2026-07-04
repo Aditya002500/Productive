@@ -32,19 +32,31 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.data.CaptureEntity
 import com.example.ui.AppViewModel
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CaptureInboxScreen(
     viewModel: AppViewModel,
-    onNavigateToDetail: (Int) -> Unit,
-    onBack: () -> Unit
+    onNavigateToDetail: (Int) -> Unit
 ) {
-    val captures by viewModel.captures.collectAsStateWithLifecycle()
+    val allCaptures by viewModel.captures.collectAsStateWithLifecycle()
     val isAnalyzing by viewModel.isAnalyzing.collectAsStateWithLifecycle()
     val analysisMessage by viewModel.analysisSuccess.collectAsStateWithLifecycle()
     var showCaptureDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var selectedCategory by remember { mutableStateOf("All") }
+    val categoryTabs = remember(allCaptures) { listOf("All") + allCaptures.map { it.category }.distinct().sorted() }
+    LaunchedEffect(categoryTabs) {
+        if (selectedCategory !in categoryTabs) selectedCategory = "All"
+    }
+    val captures = remember(allCaptures, selectedCategory) {
+        if (selectedCategory == "All") allCaptures else allCaptures.filter { it.category == selectedCategory }
+    }
 
     // Android Photo Picker — no runtime permission required.
     val photoPicker = rememberLauncherForActivityResult(
@@ -65,11 +77,6 @@ fun CaptureInboxScreen(
         topBar = {
             TopAppBar(
                 title = { Text("CaptureFlow Inbox", fontWeight = FontWeight.SemiBold, fontSize = 20.sp) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
                 actions = {
                     IconButton(onClick = { showCaptureDialog = true }) {
                         Icon(Icons.Default.Science, contentDescription = "Try a demo capture")
@@ -97,17 +104,20 @@ fun CaptureInboxScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            // Filter chips
+            // Category filter tabs — derived from actual capture categories, not hardcoded.
             ScrollableTabRow(
-                selectedTabIndex = 0,
+                selectedTabIndex = categoryTabs.indexOf(selectedCategory).coerceAtLeast(0),
                 edgePadding = 16.dp,
                 containerColor = Color.Transparent,
                 divider = {}
             ) {
-                Tab(selected = true, onClick = { }, text = { Text("All Captures") })
-                Tab(selected = false, onClick = { }, text = { Text("Work") })
-                Tab(selected = false, onClick = { }, text = { Text("Finance") })
-                Tab(selected = false, onClick = { }, text = { Text("Receipts") })
+                categoryTabs.forEach { category ->
+                    Tab(
+                        selected = selectedCategory == category,
+                        onClick = { selectedCategory = category },
+                        text = { Text(if (category == "All") "All Captures" else category) }
+                    )
+                }
             }
 
             if (isAnalyzing) {
@@ -149,14 +159,14 @@ fun CaptureInboxScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "No captures yet",
+                        if (allCaptures.isEmpty()) "No captures yet" else "No captures in \"$selectedCategory\"",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "Tap Import to pick a screenshot. Text is read on-device, then organized automatically.",
+                        if (allCaptures.isEmpty()) "Tap Import to pick a screenshot. Text is read on-device, then organized automatically." else "Try a different category, or tap \"All Captures\".",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -440,7 +450,12 @@ fun OcrReviewScreen(
         bottomBar = {
             Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Button(
-                    onClick = { onBack() },
+                    onClick = {
+                        if (capture != null) {
+                            viewModel.updateCapture(capture, extractedText = extractedText)
+                        }
+                        onBack()
+                    },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -524,6 +539,8 @@ fun AiSummaryScreen(
 ) {
     val captures by viewModel.captures.collectAsStateWithLifecycle()
     val capture = captures.find { it.id == captureId }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -533,6 +550,7 @@ fun AiSummaryScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
@@ -552,7 +570,7 @@ fun AiSummaryScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        capture?.summary ?: "Generating summary...",
+                        capture?.summary?.ifBlank { "No summary yet — analysis may still be running or failed. Check Logcat tag \"AiService\" for details." } ?: "Generating summary...",
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
                         color = MaterialTheme.colorScheme.onSurface
@@ -572,7 +590,10 @@ fun AiSummaryScreen(
                     iconBg = MaterialTheme.colorScheme.primaryContainer,
                     title = "Create Task",
                     subtitle = "Extracted from context",
-                    onClick = { onNavigateToCreateTask() }
+                    onClick = {
+                        viewModel.prefillTaskDraft(capture?.title ?: "")
+                        onNavigateToCreateTask()
+                    }
                 )
                 ActionCard(
                     icon = Icons.Default.Event,
@@ -580,7 +601,18 @@ fun AiSummaryScreen(
                     iconBg = MaterialTheme.colorScheme.secondaryContainer,
                     title = "Add Event",
                     subtitle = "Schedule sync",
-                    onClick = { }
+                    onClick = {
+                        val today = LocalDate.now()
+                        viewModel.addEvent(
+                            title = capture?.title ?: "Event",
+                            timeRange = "TBD",
+                            location = "",
+                            day = today.dayOfMonth,
+                            monthName = today.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH),
+                            color = 1
+                        )
+                        coroutineScope.launch { snackbarHostState.showSnackbar("Event added to today's Planner") }
+                    }
                 )
                 ActionCard(
                     icon = Icons.Default.NoteAdd,
@@ -588,7 +620,14 @@ fun AiSummaryScreen(
                     iconBg = MaterialTheme.colorScheme.tertiaryContainer,
                     title = "Create Note",
                     subtitle = "Save details",
-                    onClick = { }
+                    onClick = {
+                        viewModel.addNote(
+                            title = capture?.title ?: "Note",
+                            content = capture?.summary?.ifBlank { capture.extractedText } ?: (capture?.extractedText ?: ""),
+                            date = "Today"
+                        )
+                        coroutineScope.launch { snackbarHostState.showSnackbar("Note created") }
+                    }
                 )
             }
             Spacer(modifier = Modifier.height(32.dp))

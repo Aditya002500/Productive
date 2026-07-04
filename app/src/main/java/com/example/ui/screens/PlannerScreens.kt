@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
@@ -32,6 +33,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.DayOfWeek
+import java.time.format.TextStyle
+import java.util.Locale
 import com.example.data.EventEntity
 import com.example.ui.theme.accents
 import com.example.ui.AppViewModel
@@ -43,35 +49,24 @@ import com.example.ui.components.CaptureFlowBottomNavigation
 fun PlannerScreen(
     viewModel: AppViewModel,
     initialTab: String = "day",
-    onNavigateBottomBar: (String) -> Unit,
-    onBack: () -> Unit
+    onNavigateBottomBar: (String) -> Unit
 ) {
     var activeSubTab by remember { mutableStateOf(initialTab) } // "day", "week", "month"
     val events by viewModel.events.collectAsStateWithLifecycle()
 
     var showAddEventDialog by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("CaptureFlow Planner", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
                 actions = {
                     IconButton(onClick = { showAddEventDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Event")
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
-        },
-        bottomBar = {
-            CaptureFlowBottomNavigation(
-                currentRoute = "planner",
-                onNavigate = onNavigateBottomBar
             )
         }
     ) { innerPadding ->
@@ -118,11 +113,11 @@ fun PlannerScreen(
             // Sub Tab Views
             Box(modifier = Modifier.weight(1f)) {
                 if (activeSubTab == "day") {
-                    DayView(events = events, viewModel = viewModel)
+                    DayView(events = events, viewModel = viewModel, selectedDate = selectedDate, onDateSelected = { selectedDate = it })
                 } else if (activeSubTab == "week") {
-                    WeekView(events = events)
+                    WeekView(events = events, selectedDate = selectedDate, onDateSelected = { selectedDate = it })
                 } else if (activeSubTab == "month") {
-                    MonthView(events = events)
+                    MonthView(events = events, selectedDate = selectedDate, onDateSelected = { selectedDate = it })
                 }
             }
         }
@@ -133,8 +128,8 @@ fun PlannerScreen(
         var title by remember { mutableStateOf("") }
         var timeRange by remember { mutableStateOf("10:00 - 11:00 AM") }
         var location by remember { mutableStateOf("") }
-        var day by remember { mutableStateOf("24") }
-        var monthName by remember { mutableStateOf("October") }
+        var day by remember(selectedDate) { mutableStateOf(selectedDate.dayOfMonth.toString()) }
+        var monthName by remember(selectedDate) { mutableStateOf(selectedDate.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)) }
         var selectedColorIndex by remember { mutableStateOf(0) }
 
         AlertDialog(
@@ -235,9 +230,9 @@ fun PlannerScreen(
 
 // 1. DAY VIEW
 @Composable
-fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
-    // Let's filter October 24 events specifically as our focus mockup day!
-    val oct24Events = events.filter { it.monthName == "October" && it.day == 24 }
+fun DayView(events: List<EventEntity>, viewModel: AppViewModel, selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
+    val monthName = selectedDate.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+    val dayEvents = events.filter { it.monthName.equals(monthName, ignoreCase = true) && it.day == selectedDate.dayOfMonth }
 
     Column(
         modifier = Modifier
@@ -246,21 +241,27 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
             .padding(horizontal = 24.dp)
     ) {
         // Horizontal calendar day strip
+        val daysStrip = (-3..3).map { selectedDate.plusDays(it.toLong()) }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp),
+                .padding(vertical = 12.dp)
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            listOf(22 to "Sun", 23 to "Mon", 24 to "Tue", 25 to "Wed", 26 to "Thu", 27 to "Fri").forEach { (num, name) ->
-                val isSelected = num == 24
+            daysStrip.forEach { date ->
+                val isSelected = date == selectedDate
+                val name = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+                val num = date.dayOfMonth
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier
                         .width(48.dp)
-                        .height(72.dp),
+                        .height(72.dp)
+                        .padding(horizontal = 4.dp)
+                        .clickable { onDateSelected(date) },
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
@@ -292,16 +293,16 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Today's Agenda",
+            text = "Agenda for ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${selectedDate.dayOfMonth}",
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Hourly rows pulling from Room
-        if (oct24Events.isNotEmpty()) {
+        if (dayEvents.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                oct24Events.forEach { event ->
+                dayEvents.forEach { event ->
                     val containerColor = when (event.color) {
                         0 -> MaterialTheme.colorScheme.primaryContainer // Emerald light
                         1 -> MaterialTheme.colorScheme.primaryContainer // Lime light
@@ -383,7 +384,7 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
                     .height(180.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No events scheduled for Oct 24.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("No events scheduled for ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${selectedDate.dayOfMonth}.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -391,22 +392,25 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel) {
 
 // 2. WEEK VIEW
 @Composable
-fun WeekView(events: List<EventEntity>) {
-    val weekDays = listOf("Mon 23", "Tue 24", "Wed 25", "Thu 26", "Fri 27", "Sat 28", "Sun 29")
+fun WeekView(events: List<EventEntity>, selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
+    val startOfWeek = selectedDate.with(DayOfWeek.MONDAY)
+    val weekDays = (0..6).map { startOfWeek.plusDays(it.toLong()) }
 
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(weekDays) { dayStr ->
-            val dayNum = dayStr.substringAfter(" ").toIntOrNull() ?: 24
-            val dayEvents = events.filter { it.day == dayNum && it.monthName == "October" }
+        items(weekDays) { date ->
+            val monthName = date.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+            val dayNum = date.dayOfMonth
+            val dayStr = "${date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())} $dayNum"
+            val dayEvents = events.filter { it.monthName.equals(monthName, ignoreCase = true) && it.day == dayNum }
 
             Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = CardDefaults.cardColors(containerColor = if (date == selectedDate) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable { onDateSelected(date) },
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -463,9 +467,14 @@ fun WeekView(events: List<EventEntity>) {
 
 // 3. MONTH VIEW
 @Composable
-fun MonthView(events: List<EventEntity>) {
-    var selectedDay by remember { mutableStateOf(14) } // November 14 is highlighted in mockup
-    val monthEvents = events.filter { it.monthName == "November" && it.day == selectedDay }
+fun MonthView(events: List<EventEntity>, selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
+    val yearMonth = YearMonth.from(selectedDate)
+    val daysInMonth = yearMonth.lengthOfMonth()
+    val firstDayOfMonth = selectedDate.withDayOfMonth(1)
+    val startOffset = firstDayOfMonth.dayOfWeek.value % 7
+
+    val monthName = selectedDate.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+    val monthEvents = events.filter { it.monthName.equals(monthName, ignoreCase = true) && it.day == selectedDate.dayOfMonth }
 
     Column(
         modifier = Modifier
@@ -475,16 +484,22 @@ fun MonthView(events: List<EventEntity>) {
         // Month Title Header
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(onClick = { onDateSelected(selectedDate.minusMonths(1)) }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
+            }
             Text(
-                text = "November 2023",
+                text = "${yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${yearMonth.year}",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             )
+            IconButton(onClick = { onDateSelected(selectedDate.plusMonths(1)) }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -506,16 +521,16 @@ fun MonthView(events: List<EventEntity>) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // November grid starting on Wednesday (first 3 boxes empty)
+        // Month grid
         Column {
-            val totalCells = 30 + 3 // Nov has 30 days, starts Wednesday (offset of 3)
+            val totalCells = daysInMonth + startOffset
             val rows = (totalCells + 6) / 7
 
             for (row in 0 until rows) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     for (col in 0..6) {
                         val index = row * 7 + col
-                        val dayNumber = index - 2 // Offset by 3 empty spots (0,1,2 empty)
+                        val dayNumber = index - startOffset + 1
 
                         Box(
                             modifier = Modifier
@@ -524,9 +539,9 @@ fun MonthView(events: List<EventEntity>) {
                                 .padding(2.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (dayNumber in 1..30) {
-                                val isSelected = dayNumber == selectedDay
-                                val hasEvents = events.any { it.day == dayNumber && it.monthName == "November" }
+                            if (dayNumber in 1..daysInMonth) {
+                                val isSelected = dayNumber == selectedDate.dayOfMonth
+                                val hasEvents = events.any { it.day == dayNumber && it.monthName.equals(monthName, ignoreCase = true) }
 
                                 Box(
                                     modifier = Modifier
@@ -537,7 +552,7 @@ fun MonthView(events: List<EventEntity>) {
                                             else if (hasEvents) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
                                             else Color.Transparent
                                         )
-                                        .clickable { selectedDay = dayNumber },
+                                        .clickable { onDateSelected(selectedDate.withDayOfMonth(dayNumber)) },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -569,7 +584,7 @@ fun MonthView(events: List<EventEntity>) {
 
         // Day Agenda Details
         Text(
-            text = "Agenda for Nov $selectedDay",
+            text = "Agenda for ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${selectedDate.dayOfMonth}",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
         )
 

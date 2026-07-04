@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Search
@@ -33,8 +32,9 @@ import com.example.ui.components.CaptureFlowBottomNavigation
 fun SearchScreen(
     viewModel: AppViewModel,
     onNavigateToTaskDetail: (Int) -> Unit,
-    onNavigateBottomBar: (String) -> Unit,
-    onBack: () -> Unit
+    onNavigateToNoteDetail: (Int) -> Unit,
+    onNavigateToCaptureDetail: (Int) -> Unit,
+    onNavigateBottomBar: (String) -> Unit
 ) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
@@ -47,18 +47,7 @@ fun SearchScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Search & Filter", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
-        },
-        bottomBar = {
-            CaptureFlowBottomNavigation(
-                currentRoute = "search",
-                onNavigate = onNavigateBottomBar
             )
         }
     ) { innerPadding ->
@@ -179,7 +168,9 @@ fun SearchScreen(
                                 Card(
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onNavigateToNoteDetail(item.note.id) }
                                 ) {
                                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.Description, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
@@ -195,7 +186,9 @@ fun SearchScreen(
                                 Card(
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onNavigateToCaptureDetail(item.capture.id) }
                                 ) {
                                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.Image, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)

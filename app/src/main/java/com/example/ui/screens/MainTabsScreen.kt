@@ -85,25 +85,23 @@ fun MainTabsScreen(
                     1 -> PlannerScreen(
                         viewModel = viewModel,
                         initialTab = "day",
-                        onNavigateBottomBar = onNavigateBottomBar,
-                        onBack = { onNavigateBottomBar("home") }
+                        onNavigateBottomBar = onNavigateBottomBar
                     )
                     2 -> CaptureInboxScreen(
                         viewModel = viewModel,
-                        onNavigateToDetail = onNavigateToCaptureDetail,
-                        onBack = { onNavigateBottomBar("home") }
+                        onNavigateToDetail = onNavigateToCaptureDetail
                     )
                     3 -> NotesListScreen(
                         viewModel = viewModel,
                         onNavigateToEditor = onNavigateToNoteEditor,
-                        onNavigateToDetail = onNavigateToNoteDetail,
-                        onBack = { onNavigateBottomBar("home") }
+                        onNavigateToDetail = onNavigateToNoteDetail
                     )
                     4 -> SearchScreen(
                         viewModel = viewModel,
                         onNavigateToTaskDetail = onNavigateToTaskDetail,
-                        onNavigateBottomBar = onNavigateBottomBar,
-                        onBack = { onNavigateBottomBar("home") }
+                        onNavigateToNoteDetail = onNavigateToNoteDetail,
+                        onNavigateToCaptureDetail = onNavigateToCaptureDetail,
+                        onNavigateBottomBar = onNavigateBottomBar
                     )
                 }
             }

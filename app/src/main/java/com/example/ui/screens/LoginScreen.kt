@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -23,8 +24,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.ui.AppViewModel
+import com.example.ui.auth.GoogleSignInResult
+import com.example.ui.auth.requestGoogleIdToken
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,9 +38,17 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
-    var email by remember { mutableStateOf("alex@example.com") }
-    var password by remember { mutableStateOf("password") }
-    var showError by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var showValidationError by remember { mutableStateOf(false) }
+    var infoDialogMessage by remember { mutableStateOf<String?>(null) }
+    var showGoogleSetupDialog by remember { mutableStateOf(false) }
+
+    val authError by viewModel.authError.collectAsStateWithLifecycle()
+    val isAuthLoading by viewModel.isAuthLoading.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -99,7 +112,7 @@ fun LoginScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it; showError = false },
+                    onValueChange = { email = it; showValidationError = false; viewModel.clearAuthError() },
                     placeholder = { Text("email@example.com", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     leadingIcon = {
                         Icon(
@@ -138,7 +151,15 @@ fun LoginScreen(
                         )
                     )
 
-                    TextButton(onClick = { /* Simulated */ }) {
+                    TextButton(onClick = {
+                        if (email.isBlank()) {
+                            infoDialogMessage = "Enter your email address first, then tap \"Forgot Password?\" again."
+                        } else {
+                            viewModel.sendPasswordReset(email) { _, message ->
+                                infoDialogMessage = message
+                            }
+                        }
+                    }) {
                         Text(
                             text = "Forgot Password?",
                             style = MaterialTheme.typography.labelMedium.copy(
@@ -151,7 +172,7 @@ fun LoginScreen(
 
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it; showError = false },
+                    onValueChange = { password = it; showValidationError = false; viewModel.clearAuthError() },
                     placeholder = { Text("••••••••", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     leadingIcon = {
                         Icon(
@@ -174,10 +195,10 @@ fun LoginScreen(
                 )
             }
 
-            if (showError) {
+            if (showValidationError || authError != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Please enter a valid email and password.",
+                    text = authError ?: "Please enter your email and password.",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.align(Alignment.Start)
@@ -189,14 +210,16 @@ fun LoginScreen(
             // Sign In Button
             Button(
                 onClick = {
-                    if (email.contains("@") && password.isNotBlank()) {
-                        val parsedName = email.substringBefore("@").replaceFirstChar { it.uppercase() }
-                        viewModel.updateProfile(parsedName, email)
-                        onLoginSuccess()
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        showValidationError = false
+                        viewModel.signInWithEmail(email, password) { success ->
+                            if (success) onLoginSuccess()
+                        }
                     } else {
-                        showError = true
+                        showValidationError = true
                     }
                 },
+                enabled = !isAuthLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -208,10 +231,14 @@ fun LoginScreen(
                 shape = RoundedCornerShape(8.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
             ) {
-                Text(
-                    text = "Sign In",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
+                if (isAuthLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Text(
+                        text = "Sign In",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -238,8 +265,18 @@ fun LoginScreen(
             // Google Button
             OutlinedButton(
                 onClick = {
-                    viewModel.updateProfile("Alex", "alex@example.com")
-                    onLoginSuccess()
+                    coroutineScope.launch {
+                        when (val result = requestGoogleIdToken(context)) {
+                            is GoogleSignInResult.Success -> {
+                                viewModel.signInWithGoogleIdToken(result.idToken) { success ->
+                                    if (success) onLoginSuccess()
+                                }
+                            }
+                            is GoogleSignInResult.NotConfigured -> showGoogleSetupDialog = true
+                            is GoogleSignInResult.Cancelled -> { /* user backed out, nothing to show */ }
+                            is GoogleSignInResult.Failure -> infoDialogMessage = result.message
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -285,5 +322,29 @@ fun LoginScreen(
                 }
             }
         }
+    }
+
+    infoDialogMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { infoDialogMessage = null },
+            title = { Text("Password Reset") },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = { infoDialogMessage = null }) { Text("OK") } }
+        )
+    }
+
+    if (showGoogleSetupDialog) {
+        AlertDialog(
+            onDismissRequest = { showGoogleSetupDialog = false },
+            title = { Text("Google Sign-In needs setup") },
+            text = {
+                Text(
+                    "Google Sign-In hasn't been enabled for this project yet. Enable the \"Google\" " +
+                        "provider in Firebase Console → Authentication → Sign-in method, register this " +
+                        "app's SHA-1 fingerprint, then re-download google-services.json and rebuild."
+                )
+            },
+            confirmButton = { TextButton(onClick = { showGoogleSetupDialog = false }) { Text("Got it") } }
+        )
     }
 }

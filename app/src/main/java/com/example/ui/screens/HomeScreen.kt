@@ -16,16 +16,21 @@ import androidx.compose.material3.*
 import com.example.ui.components.CaptureFlowBottomNavigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppViewModel
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -41,17 +46,29 @@ fun HomeScreen(
     onNavigateToNotifications: () -> Unit
 ) {
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
-    val userName = "Alex"
+    val events by viewModel.events.collectAsStateWithLifecycle()
+    val userName by viewModel.userProfileName.collectAsStateWithLifecycle()
     val currentDate = SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(Date())
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        bottomBar = {
-            CaptureFlowBottomNavigation(
-                currentRoute = "home",
-                onNavigate = onNavigateBottomBar
-            )
+    val greeting = remember {
+        when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+            in 0..11 -> "Good Morning"
+            in 12..16 -> "Good Afternoon"
+            else -> "Good Evening"
         }
+    }
+
+    val today = remember { LocalDate.now() }
+    val todayMonthName = remember(today) { today.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH) }
+    val todaysEvents = remember(events, todayMonthName, today) {
+        events.filter { it.monthName.equals(todayMonthName, ignoreCase = true) && it.day == today.dayOfMonth }
+    }
+    val completedCount = tasks.count { it.isCompleted }
+    val totalCount = tasks.size
+    val progress = if (totalCount == 0) 0f else completedCount.toFloat() / totalCount
+
+    Scaffold(
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -75,7 +92,7 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Good Morning, $userName",
+                    text = "$greeting, $userName",
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -122,20 +139,20 @@ fun HomeScreen(
                             strokeWidth = 8.dp
                         )
                         CircularProgressIndicator(
-                            progress = { 0.1f },
+                            progress = { progress },
                             modifier = Modifier.size(80.dp),
                             color = MaterialTheme.colorScheme.primary,
                             strokeWidth = 8.dp
                         )
                         Text(
-                            "0%", 
+                            "${(progress * 100).toInt()}%",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Complete d: 0/3", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
-                    Text("Focus: 3h 20m", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
+                    Text("Completed: $completedCount/$totalCount", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
+                    Text("Events today: ${todaysEvents.size}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
                 }
             }
 
@@ -191,9 +208,12 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Up Next Card
+        // Up Next Card — the first real event scheduled for today, if any.
+        val upNext = todaysEvents.firstOrNull()
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onNavigateBottomBar("planner") },
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             shape = RoundedCornerShape(24.dp),
             elevation = CardDefaults.cardElevation(0.dp)
@@ -210,21 +230,28 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "Product Sync: CaptureFlow V2",
+                    upNext?.title ?: "No events scheduled today",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                    ) {
-                        Text("In 15 min", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelMedium)
+                if (upNext != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (upNext.location.isNotBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                            ) {
+                                Text(upNext.location, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelMedium)
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+                        Text(upNext.timeRange, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyMedium)
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("10:30 AM - 11:30 AM", color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.bodyMedium)
+                } else {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Tap to add one from the Planner", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -236,55 +263,43 @@ fun HomeScreen(
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(bottom = 32.dp)
-        ) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .width(160.dp)
-                        .height(120.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f), RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("09:00 AM", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-                    }
-                }
-            }
-            item {
-                Card(
-                    modifier = Modifier
-                        .width(180.dp)
-                        .height(120.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer), // Active green in dark mode, green in light mode?
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("10:30 AM (Now)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Product Sync", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.8f))
-                    }
-                }
-            }
-            item {
-                Card(
-                    modifier = Modifier
-                        .width(160.dp)
-                        .height(120.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f), RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("01:00 PM", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Lunch", color = MaterialTheme.colorScheme.onBackground.copy(alpha=0.8f))
+
+        if (todaysEvents.isEmpty()) {
+            Text(
+                "No events today. Add one from the Planner tab.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+        } else {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(bottom = 32.dp)
+            ) {
+                items(todaysEvents) { event ->
+                    val isNext = event == upNext
+                    Card(
+                        modifier = Modifier
+                            .width(170.dp)
+                            .height(120.dp)
+                            .then(
+                                if (!isNext) Modifier.border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                                else Modifier
+                            )
+                            .clickable { onNavigateBottomBar("planner") },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isNext) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            val textColor = if (isNext) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground
+                            Text(event.timeRange, fontWeight = FontWeight.Bold, color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(event.title, color = textColor.copy(alpha = 0.85f), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        }
                     }
                 }
             }
