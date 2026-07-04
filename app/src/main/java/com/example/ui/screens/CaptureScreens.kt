@@ -292,6 +292,18 @@ fun CaptureGridItem(capture: CaptureEntity, onClick: () -> Unit) {
     }
 }
 
+/**
+ * OCR output has a line break after nearly every token, which reads as a
+ * cramped word list. Collapse single line breaks into spaces (reflowing into
+ * paragraphs) while keeping blank-line-separated paragraph breaks intact.
+ */
+private fun reflowOcrText(text: String): String =
+    text.split(Regex("\n{2,}"))
+        .joinToString("\n\n") { paragraph ->
+            paragraph.replace('\n', ' ').replace(Regex(" {2,}"), " ").trim()
+        }
+        .trim()
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CaptureDetailScreen(
@@ -387,7 +399,14 @@ fun CaptureDetailScreen(
                             Icon(Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(capture.summary.ifEmpty { "Generating summary..." }, fontSize = 16.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            capture.summary.ifBlank { "No summary yet — tap to view details and regenerate." },
+                            fontSize = 16.sp,
+                            lineHeight = 24.sp,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
@@ -417,7 +436,14 @@ fun CaptureDetailScreen(
                                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                                 .padding(12.dp)
                         ) {
-                            Text(capture.extractedText, fontSize = 14.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurface)
+                            Text(
+                                reflowOcrText(capture.extractedText).ifBlank { "No text detected." },
+                                fontSize = 14.sp,
+                                lineHeight = 21.sp,
+                                maxLines = 6,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }
@@ -539,6 +565,7 @@ fun AiSummaryScreen(
 ) {
     val captures by viewModel.captures.collectAsStateWithLifecycle()
     val capture = captures.find { it.id == captureId }
+    val isAnalyzing by viewModel.isAnalyzing.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -570,11 +597,29 @@ fun AiSummaryScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        capture?.summary?.ifBlank { "No summary yet — analysis may still be running or failed. Check Logcat tag \"AiService\" for details." } ?: "Generating summary...",
+                        capture?.summary?.ifBlank { "No summary was generated — this usually means Firebase AI Logic (Gemini) isn't enabled yet for this project, or the request failed. Check Logcat tag \"AiService\" for the exact reason." } ?: "Generating summary...",
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    if (capture != null && capture.summary.isBlank()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TextButton(
+                            onClick = { viewModel.reanalyzeCapture(capture.id) },
+                            enabled = !isAnalyzing,
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            if (isAnalyzing) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Regenerating…")
+                            } else {
+                                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Regenerate summary")
+                            }
+                        }
+                    }
                 }
             }
 
