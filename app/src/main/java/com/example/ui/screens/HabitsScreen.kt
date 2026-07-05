@@ -68,7 +68,8 @@ fun streakBadge(streak: Int): String? = when {
 @Composable
 fun HabitsScreen(
     viewModel: AppViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToTracking: (Int) -> Unit
 ) {
     val habits by viewModel.habits.collectAsStateWithLifecycle()
     val recentLogs by viewModel.recentHabitLogs.collectAsStateWithLifecycle()
@@ -181,6 +182,10 @@ fun HabitsScreen(
             onConfirm = { value, note ->
                 viewModel.completeHabitToday(habit, value, note)
                 selectedHabitForMetric = null
+            },
+            onTrackAutomatically = {
+                selectedHabitForMetric = null
+                onNavigateToTracking(habit.id)
             }
         )
     }
@@ -488,7 +493,8 @@ private fun HabitCard(
 private fun MetricEntryDialog(
     habit: HabitEntity,
     onDismiss: () -> Unit,
-    onConfirm: (value: Float, note: String) -> Unit
+    onConfirm: (value: Float, note: String) -> Unit,
+    onTrackAutomatically: () -> Unit
 ) {
     val info = habitTypeInfo(habit.habitType)
     var valueText by remember { mutableStateOf("") }
@@ -510,6 +516,12 @@ private fun MetricEntryDialog(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
+                }
+                if (habit.habitType in listOf("Running", "Cycling")) {
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onTrackAutomatically) {
+                        Text("📍 Track Automatically")
+                    }
                 }
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(

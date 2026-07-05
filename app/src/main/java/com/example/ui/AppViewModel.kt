@@ -390,9 +390,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Marking a task done is one-way — completed tasks can no longer be un-checked. */
     fun toggleTaskCompletion(task: TaskEntity) {
+        if (task.isCompleted) return
         viewModelScope.launch {
-            repository.updateTask(task.copy(isCompleted = !task.isCompleted))
+            repository.updateTask(task.copy(isCompleted = true))
             TodaysTasksWidgetProvider.requestUpdate(getApplication<Application>())
         }
     }
@@ -423,9 +425,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return repository.getSubTasksForTaskFlow(taskId)
     }
 
+    /** Same one-way rule as [toggleTaskCompletion]: no un-checking a completed subtask. */
     fun toggleSubTaskCompletion(subTask: SubTaskEntity) {
+        if (subTask.isCompleted) return
         viewModelScope.launch {
-            repository.updateSubTask(subTask.copy(isCompleted = !subTask.isCompleted))
+            repository.updateSubTask(subTask.copy(isCompleted = true))
         }
     }
 
@@ -696,6 +700,62 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getLogsForHabitFlow(habitId: Int) = repository.getLogsForHabitFlow(habitId)
+
+    // ---- Live habit GPS tracking session (survives navigating away from TrackHabitScreen) ----
+
+    private var locationTracker: LocationTracker? = null
+    private var trackingTimerJob: kotlinx.coroutines.Job? = null
+
+    val trackingHabitId = MutableStateFlow<Int?>(null)
+    val trackingIsRunning = MutableStateFlow(false)
+    val trackingSeconds = MutableStateFlow(0)
+    val trackingDistanceMeters = MutableStateFlow(0f)
+    val trackingPath = MutableStateFlow<List<com.google.android.gms.maps.model.LatLng>>(emptyList())
+
+    /** Returns the already-running tracker for this habit, or starts a fresh session. */
+    fun trackerForHabit(habitId: Int): LocationTracker {
+        if (trackingHabitId.value != habitId) {
+            locationTracker?.stop()
+            trackingHabitId.value = habitId
+            trackingSeconds.value = 0
+            trackingDistanceMeters.value = 0f
+            trackingPath.value = emptyList()
+        }
+        return locationTracker ?: LocationTracker(getApplication()).also { locationTracker = it }
+    }
+
+    fun startTrackingUpdates() {
+        trackingIsRunning.value = true
+        locationTracker?.start { distance, path ->
+            trackingDistanceMeters.value = distance
+            trackingPath.value = path
+        }
+        trackingTimerJob?.cancel()
+        trackingTimerJob = viewModelScope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(1000)
+                trackingSeconds.value += 1
+            }
+        }
+    }
+
+    fun pauseTrackingUpdates() {
+        trackingIsRunning.value = false
+        locationTracker?.pause()
+        trackingTimerJob?.cancel()
+    }
+
+    /** Ends the session for good — call after Save or discarding the tracked habit. */
+    fun endTrackingSession() {
+        trackingIsRunning.value = false
+        trackingTimerJob?.cancel()
+        locationTracker?.stop()
+        locationTracker = null
+        trackingHabitId.value = null
+        trackingSeconds.value = 0
+        trackingDistanceMeters.value = 0f
+        trackingPath.value = emptyList()
+    }
 
     /** Event operations — toggle done state */
     fun toggleEventDone(event: EventEntity) {

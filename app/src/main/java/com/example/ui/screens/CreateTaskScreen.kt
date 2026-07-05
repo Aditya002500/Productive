@@ -23,7 +23,7 @@ import com.example.util.NaturalDateParser
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-private fun LocalDate.toDisplayLabel(): String = when (this) {
+fun LocalDate.toDisplayLabel(): String = when (this) {
     LocalDate.now() -> "Today"
     LocalDate.now().plusDays(1) -> "Tomorrow"
     else -> format(DateTimeFormatter.ofPattern("EEE, MMM d"))

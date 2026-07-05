@@ -105,7 +105,8 @@ fun PlannerScreen(
                         snackbarHostState.showSnackbar("Google Calendar authorization was not completed.")
                     }
                 } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Couldn't import from Google Calendar.")
+                    android.util.Log.e("GoogleCalendarImport", "Import failed", e)
+                    snackbarHostState.showSnackbar("Couldn't import from Google Calendar: ${e.message}")
                 } finally {
                     isImportingCalendar = false
                 }
@@ -141,7 +142,8 @@ fun PlannerScreen(
                     }
                 }
             } catch (e: Exception) {
-                snackbarHostState.showSnackbar("Couldn't import from Google Calendar.")
+                android.util.Log.e("GoogleCalendarImport", "Import failed", e)
+                snackbarHostState.showSnackbar("Couldn't import from Google Calendar: ${e.message}")
                 isImportingCalendar = false
             }
         }
@@ -359,6 +361,13 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel, selectedDate: Lo
     val recentLogs by viewModel.recentHabitLogs.collectAsStateWithLifecycle()
     val selectedEpochDay = remember(selectedDate) { selectedDate.toEpochDay() }
     val dayHabitLogs = remember(recentLogs, selectedEpochDay) { recentLogs.filter { it.epochDay == selectedEpochDay } }
+    val tasks by viewModel.tasks.collectAsStateWithLifecycle()
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
+    // ponytail: dueDate/date are frozen relative labels ("Today"/"Tomorrow"), not real dates —
+    // matching must use the same label, and a label goes stale the day after it's set.
+    val selectedDateLabel = remember(selectedDate) { selectedDate.toDisplayLabel() }
+    val dayTasks = remember(tasks, selectedDateLabel) { tasks.filter { it.dueDate == selectedDateLabel } }
+    val dayNotes = remember(notes, selectedDateLabel) { notes.filter { it.date == selectedDateLabel } }
 
     Column(
         modifier = Modifier
@@ -511,70 +520,157 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel, selectedDate: Lo
                     }
                 }
             }
+        }
 
-            // ── Habit completions for this day ──────────────────────────────
-            if (dayHabitLogs.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    "Habit Activity",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    dayHabitLogs.forEach { log ->
-                        val habit = habits.find { it.id == log.habitId }
-                        if (habit != null) {
-                            val info = habitTypeInfo(habit.habitType)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                                        RoundedCornerShape(10.dp)
-                                    )
-                                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(info.emoji, style = MaterialTheme.typography.bodyLarge)
-                                Spacer(Modifier.width(10.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(habit.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                    if (log.metricValue > 0f) {
-                                        val display = if (log.metricValue == kotlin.math.floor(log.metricValue.toDouble()).toFloat()) log.metricValue.toInt().toString() else "%.1f".format(log.metricValue)
-                                        Text(
-                                            "$display ${habit.metricUnit}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
-                                    }
-                                    if (log.note.isNotBlank()) {
-                                        Text(
-                                            "\"${log.note}\"",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                                Icon(
-                                    Icons.Default.CheckCircle,
-                                    contentDescription = "Completed",
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.size(18.dp)
+        // ── Habit completions for this day ──────────────────────────────
+        if (dayHabitLogs.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "Habit Activity",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                dayHabitLogs.forEach { log ->
+                    val habit = habits.find { it.id == log.habitId }
+                    if (habit != null) {
+                        val info = habitTypeInfo(habit.habitType)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                                    RoundedCornerShape(10.dp)
                                 )
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(info.emoji, style = MaterialTheme.typography.bodyLarge)
+                            Spacer(Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(habit.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                if (log.metricValue > 0f) {
+                                    val display = if (log.metricValue == kotlin.math.floor(log.metricValue.toDouble()).toFloat()) log.metricValue.toInt().toString() else "%.1f".format(log.metricValue)
+                                    Text(
+                                        "$display ${habit.metricUnit}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                }
+                                if (log.note.isNotBlank()) {
+                                    Text(
+                                        "\"${log.note}\"",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = "Completed",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }
             }
-        } else {
+        }
+
+        // ── Tasks due this day ──────────────────────────────────────────
+        if (dayTasks.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "Tasks Due",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                dayTasks.forEach { task ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                                RoundedCornerShape(10.dp)
+                            )
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                task.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                textDecoration = if (task.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                            )
+                            Text(
+                                task.priority,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        IconButton(
+                            onClick = { viewModel.toggleTaskCompletion(task) },
+                            enabled = !task.isCompleted
+                        ) {
+                            Icon(
+                                if (task.isCompleted) Icons.Default.CheckCircle else Icons.Default.CheckCircleOutline,
+                                contentDescription = if (task.isCompleted) "Done" else "Mark done",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Notes created this day ───────────────────────────────────────
+        if (dayNotes.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "Notes",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                dayNotes.forEach { note ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                RoundedCornerShape(10.dp)
+                            )
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Text(note.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                        if (note.content.isNotBlank()) {
+                            Text(
+                                note.content,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (dayEvents.isEmpty() && dayHabitLogs.isEmpty() && dayTasks.isEmpty() && dayNotes.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No events scheduled for ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${selectedDate.dayOfMonth}.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Nothing scheduled for ${selectedDate.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} ${selectedDate.dayOfMonth}.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

@@ -6,17 +6,32 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.ui.AppViewModel
@@ -54,6 +69,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         val navController = rememberNavController()
 
+                        Box(modifier = Modifier.fillMaxSize()) {
                         NavHost(
                             navController = navController,
                             startDestination = "splash"
@@ -169,6 +185,22 @@ class MainActivity : ComponentActivity() {
                             // Habits
                             composable("habits") {
                                 HabitsScreen(
+                                    viewModel = appViewModel,
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToTracking = { habitId ->
+                                        navController.navigate("track_habit/$habitId")
+                                    }
+                                )
+                            }
+
+                            // Track Habit (live GPS distance)
+                            composable(
+                                route = "track_habit/{habitId}",
+                                arguments = listOf(navArgument("habitId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val habitId = backStackEntry.arguments?.getInt("habitId") ?: 0
+                                TrackHabitScreen(
+                                    habitId = habitId,
                                     viewModel = appViewModel,
                                     onBack = { navController.popBackStack() }
                                 )
@@ -334,9 +366,74 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+
+                        // Live habit GPS tracking survives navigating away from TrackHabitScreen
+                        // (state lives on appViewModel) — this bar lets the user get back to it.
+                        val trackingHabitId by appViewModel.trackingHabitId.collectAsStateWithLifecycle()
+                        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                        if (trackingHabitId != null && currentRoute != "track_habit/{habitId}") {
+                            val habits by appViewModel.habits.collectAsStateWithLifecycle()
+                            val isRunning by appViewModel.trackingIsRunning.collectAsStateWithLifecycle()
+                            val seconds by appViewModel.trackingSeconds.collectAsStateWithLifecycle()
+                            val distanceMeters by appViewModel.trackingDistanceMeters.collectAsStateWithLifecycle()
+                            TrackingFloatingBar(
+                                habitTitle = habits.find { it.id == trackingHabitId }?.title ?: "Habit",
+                                isRunning = isRunning,
+                                distanceMeters = distanceMeters,
+                                seconds = seconds,
+                                onClick = { navController.navigate("track_habit/${trackingHabitId}") },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(16.dp)
+                            )
+                        }
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TrackingFloatingBar(
+    habitTitle: String,
+    isRunning: Boolean,
+    distanceMeters: Float,
+    seconds: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("Tracking $habitTitle", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "%.2f km · %02d:%02d%s".format(
+                        distanceMeters / 1000f,
+                        seconds / 60,
+                        seconds % 60,
+                        if (isRunning) "" else " · Paused"
+                    ),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Text(
+                if (isRunning) "View" else "Resume",
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
