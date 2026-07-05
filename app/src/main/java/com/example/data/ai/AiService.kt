@@ -23,6 +23,9 @@ data class AiAnalysis(
     val needsReview: Boolean
 )
 
+/** One turn in an Assistant conversation. [role] is either "user" or "assistant". */
+data class ChatMessage(val role: String, val text: String)
+
 /**
  * Cloud enrichment via Firebase AI Logic (Gemini Developer API backend).
  *
@@ -81,6 +84,41 @@ class AiService {
         } catch (e: Exception) {
             Log.w(TAG, "AI summarizeNote failed, using fallback: ${e.message}")
             text.take(140)
+        }
+    }
+
+    /**
+     * Grounded productivity-assistant reply. [dataSnapshot] is a compact plain-text summary of
+     * the user's own tasks/notes/habits; [appGuide] is the app's static how-to documentation;
+     * [history] is the prior turns of this conversation. Falls back to a plain apology on any
+     * failure so the chat UI never breaks.
+     */
+    suspend fun chat(history: List<ChatMessage>, dataSnapshot: String, appGuide: String, userMessage: String): String {
+        val transcript = history.joinToString("\n") { "${it.role}: ${it.text}" }
+        val prompt = """
+            You are a helpful assistant inside a personal tasks/notes/habits app. Use the APP
+            GUIDE below to answer "how do I..." questions about using the app's features. Use
+            the USER'S DATA below to answer questions about the user's own tasks/notes/habits.
+            Do not invent tasks, notes, habits, or app features that aren't listed below. Keep
+            replies short (2-4 sentences) and conversational, no markdown headers.
+
+            APP GUIDE:
+            ${appGuide.take(6000)}
+
+            USER'S DATA:
+            ${dataSnapshot.take(4000)}
+
+            CONVERSATION SO FAR:
+            $transcript
+
+            user: $userMessage
+        """.trimIndent()
+        return try {
+            textModel.generateContent(prompt).text?.trim()?.ifBlank { null }
+                ?: "Sorry, I couldn't come up with a reply. Try rephrasing your question."
+        } catch (e: Exception) {
+            Log.w(TAG, "AI chat failed, using fallback: ${e.message}")
+            "Sorry, I'm having trouble responding right now. Please try again in a moment."
         }
     }
 

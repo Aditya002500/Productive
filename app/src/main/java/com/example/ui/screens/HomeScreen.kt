@@ -47,6 +47,15 @@ private fun priorityRank(priority: String): Int = when (priority) {
 }
 
 @Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+@Composable
 fun HomeScreen(
     viewModel: AppViewModel,
     onNavigateToSearch: () -> Unit,
@@ -104,7 +113,10 @@ fun HomeScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
+
+        SectionLabel("OVERVIEW")
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Grid (Progress & Priority)
         Row(
@@ -159,6 +171,7 @@ fun HomeScreen(
                     .aspectRatio(0.85f)
                     .clickable { onNavigateToCreateTask() },
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(0.dp)
             ) {
@@ -216,7 +229,10 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
+
+        SectionLabel("SCHEDULE")
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Up Next Card — the first non-done event scheduled for today, if any.
         val upNext = todaysEvents.firstOrNull { !it.isDone }
@@ -266,15 +282,16 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             "Today's Timeline",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (todaysEvents.isEmpty()) {
             Text(
@@ -315,7 +332,10 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(28.dp))
+
+        SectionLabel("TODAY'S PROGRESS")
+        Spacer(modifier = Modifier.height(12.dp))
 
         // ── Habits Today cross-tab section ────────────────────────────────
         if (habits.any { it.isActive }) {
@@ -325,15 +345,16 @@ fun HomeScreen(
                 totalActive = totalActiveHabits,
                 onNavigateToHabits = { /* drawer handles navigation */ }
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         Text(
             "Task Breakdown",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         TaskBreakdownChart(
             tasks = tasks,
             eventsDone = todaysEventsDone,

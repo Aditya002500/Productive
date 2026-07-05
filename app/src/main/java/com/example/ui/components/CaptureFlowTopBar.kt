@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +21,11 @@ import androidx.compose.ui.unit.sp
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CaptureFlowTopBar(title: String, onOpenDrawer: () -> Unit) {
+fun CaptureFlowTopBar(
+    title: String,
+    onOpenDrawer: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {}
+) {
     TopAppBar(
         title = { Text(title, fontWeight = FontWeight.SemiBold, fontSize = 20.sp) },
         navigationIcon = {
@@ -28,6 +33,7 @@ fun CaptureFlowTopBar(title: String, onOpenDrawer: () -> Unit) {
                 Icon(Icons.Default.Menu, contentDescription = "Menu")
             }
         },
+        actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
             titleContentColor = MaterialTheme.colorScheme.onBackground,

@@ -34,6 +34,8 @@ class SettingsRepository(private val context: Context) {
         val FOCUS_SESSIONS_USED = intPreferencesKey("focus_sessions_used")
         val FOCUS_SESSIONS_RESET_DATE = stringPreferencesKey("focus_sessions_reset_date")
         val CLOUD_SYNC = booleanPreferencesKey("cloud_sync_enabled")
+        val AI_CHAT_MESSAGES_USED = intPreferencesKey("ai_chat_messages_used")
+        val AI_CHAT_MESSAGES_RESET_DATE = stringPreferencesKey("ai_chat_messages_reset_date")
     }
 
     val themeMode: Flow<ThemeMode> = context.settingsDataStore.data.map { prefs ->
@@ -121,6 +123,22 @@ class SettingsRepository(private val context: Context) {
             val current = if (prefs[Keys.FOCUS_SESSIONS_RESET_DATE] == today) (prefs[Keys.FOCUS_SESSIONS_USED] ?: 0) else 0
             prefs[Keys.FOCUS_SESSIONS_RESET_DATE] = today
             prefs[Keys.FOCUS_SESSIONS_USED] = current + 1
+        }
+    }
+
+    /** Number of Assistant chat messages sent today; resets to 0 whenever the stored reset date isn't today. */
+    val aiChatMessagesUsedToday: Flow<Int> = context.settingsDataStore.data.map { prefs ->
+        val storedDate = prefs[Keys.AI_CHAT_MESSAGES_RESET_DATE]
+        if (storedDate != LocalDate.now().toString()) 0 else (prefs[Keys.AI_CHAT_MESSAGES_USED] ?: 0)
+    }
+
+    /** Records one Assistant chat message usage, auto-resetting the counter if the day has rolled over. */
+    suspend fun recordAiChatMessageUsed() {
+        context.settingsDataStore.edit { prefs ->
+            val today = LocalDate.now().toString()
+            val current = if (prefs[Keys.AI_CHAT_MESSAGES_RESET_DATE] == today) (prefs[Keys.AI_CHAT_MESSAGES_USED] ?: 0) else 0
+            prefs[Keys.AI_CHAT_MESSAGES_RESET_DATE] = today
+            prefs[Keys.AI_CHAT_MESSAGES_USED] = current + 1
         }
     }
 }

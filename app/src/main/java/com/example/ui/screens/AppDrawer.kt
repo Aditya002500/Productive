@@ -89,7 +89,6 @@ fun AppDrawerContent(
             onClick = { onCloseDrawer(); onNavigateToFriends() },
             modifier = Modifier.padding(horizontal = 12.dp)
         )
-
         Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(8.dp))

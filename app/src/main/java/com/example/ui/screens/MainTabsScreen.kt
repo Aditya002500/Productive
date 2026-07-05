@@ -6,14 +6,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppViewModel
@@ -46,6 +56,13 @@ fun MainTabsScreen(
     val onOpenDrawer: () -> Unit = { coroutineScope.launch { drawerState.open() } }
     val userName by viewModel.userProfileName.collectAsStateWithLifecycle()
     val userEmail by viewModel.userProfileEmail.collectAsStateWithLifecycle()
+    val allNoteTags by viewModel.allNoteTags.collectAsStateWithLifecycle()
+    var selectedNoteTag by remember { mutableStateOf("All") }
+    var showNoteTagMenu by remember { mutableStateOf(false) }
+
+    LaunchedEffect(allNoteTags) {
+        if (selectedNoteTag != "All" && selectedNoteTag !in allNoteTags) selectedNoteTag = "All"
+    }
 
     val currentRoute = when (pagerState.currentPage) {
         0 -> "home"
@@ -93,7 +110,30 @@ fun MainTabsScreen(
             topBar = {
                 CaptureFlowTopBar(
                     title = pageTitles[pagerState.currentPage],
-                    onOpenDrawer = onOpenDrawer
+                    onOpenDrawer = onOpenDrawer,
+                    actions = {
+                        if (pagerState.currentPage == 3 && allNoteTags.isNotEmpty()) {
+                            Box {
+                                IconButton(onClick = { showNoteTagMenu = true }) {
+                                    Icon(Icons.Default.FilterList, contentDescription = "Filter notes by tag")
+                                }
+                                DropdownMenu(
+                                    expanded = showNoteTagMenu,
+                                    onDismissRequest = { showNoteTagMenu = false }
+                                ) {
+                                    (listOf("All") + allNoteTags).forEach { tag ->
+                                        DropdownMenuItem(
+                                            text = { Text(tag) },
+                                            onClick = {
+                                                selectedNoteTag = tag
+                                                showNoteTagMenu = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 )
             },
             bottomBar = {
@@ -105,6 +145,7 @@ fun MainTabsScreen(
         ) { innerPadding ->
             HorizontalPager(
                 state = pagerState,
+                beyondViewportPageCount = 1,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -132,7 +173,9 @@ fun MainTabsScreen(
                         3 -> NotesListScreen(
                             viewModel = viewModel,
                             onNavigateToEditor = onNavigateToNoteEditor,
-                            onNavigateToDetail = onNavigateToNoteDetail
+                            onNavigateToDetail = onNavigateToNoteDetail,
+                            selectedTag = selectedNoteTag,
+                            onSelectedTagChange = { selectedNoteTag = it }
                         )
                         4 -> SearchScreen(
                             viewModel = viewModel,

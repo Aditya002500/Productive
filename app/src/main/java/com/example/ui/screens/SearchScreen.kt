@@ -4,15 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,13 +75,13 @@ fun SearchScreen(
         )
 
         // Filtering Chips Row
-        Row(
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            listOf("All", "Tasks", "Notes", "Screenshots", "Events", "Habits").forEach { category ->
+            items(listOf("All", "Tasks", "Notes", "Screenshots", "Events", "Habits")) { category ->
                 FilterChip(
                     selected = selectedFilter == category,
                     onClick = { viewModel.setFilter(category) },
@@ -173,20 +176,21 @@ fun SearchScreen(
 
         // Rendered Search Results
         if (filteredResults.isNotEmpty()) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "Results (${filteredResults.size})",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
+                item {
+                    Text(
+                        text = "Results (${filteredResults.size})",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
 
-                filteredResults.forEach { item ->
+                items(filteredResults) { item ->
                     when (item) {
                         is SearchResultItem.TaskResult -> {
                             Card(
@@ -288,7 +292,7 @@ fun SearchScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         } else {
             Box(
@@ -297,7 +301,21 @@ fun SearchScreen(
                     .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No matching items found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        Icons.Default.SearchOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("No matching items found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "Try a different search term or filter",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

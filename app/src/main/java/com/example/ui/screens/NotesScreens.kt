@@ -70,15 +70,11 @@ private fun noteCardColor(colorTag: Int): Color? =
 fun NotesListScreen(
     viewModel: AppViewModel,
     onNavigateToEditor: (Int?) -> Unit,
-    onNavigateToDetail: (Int) -> Unit
+    onNavigateToDetail: (Int) -> Unit,
+    selectedTag: String = "All",
+    onSelectedTagChange: (String) -> Unit = {}
 ) {
     val notes by viewModel.notes.collectAsStateWithLifecycle()
-    val allTags by viewModel.allNoteTags.collectAsStateWithLifecycle()
-    var selectedTag by remember { mutableStateOf("All") }
-
-    LaunchedEffect(allTags) {
-        if (selectedTag != "All" && selectedTag !in allTags) selectedTag = "All"
-    }
 
     val filteredNotes = remember(notes, selectedTag) {
         if (selectedTag == "All") notes
@@ -106,22 +102,16 @@ fun NotesListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item { Spacer(modifier = Modifier.height(8.dp)) }
-            if (allTags.isNotEmpty()) {
+            if (selectedTag != "All") {
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        (listOf("All") + allTags).forEach { tag ->
-                            FilterChip(
-                                selected = selectedTag == tag,
-                                onClick = { selectedTag = tag },
-                                label = { Text(tag) }
-                            )
+                    InputChip(
+                        selected = true,
+                        onClick = { onSelectedTagChange("All") },
+                        label = { Text("Filtered by: $selectedTag") },
+                        trailingIcon = {
+                            Icon(Icons.Default.Close, contentDescription = "Clear filter", modifier = Modifier.size(16.dp))
                         }
-                    }
+                    )
                 }
             }
             items(filteredNotes) { note ->
@@ -359,7 +349,11 @@ fun NoteEditorScreen(
                     },
                     enabled = content.isNotBlank() && !isSummarizing
                 ) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                    if (isSummarizing) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                    }
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(if (isSummarizing) "Summarizing..." else "AI Summary", fontSize = 12.sp)
                 }

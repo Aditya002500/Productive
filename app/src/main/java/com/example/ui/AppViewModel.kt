@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
 import com.example.data.ai.AiService
+import com.example.data.ai.ChatMessage
 import com.example.data.ai.OcrService
 import com.example.data.repository.AppRepository
 import com.example.data.sync.CloudSyncRepository
@@ -37,6 +38,7 @@ import java.util.UUID
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
         const val DAILY_AI_SUMMARY_LIMIT = 5
+        const val DAILY_AI_CHAT_LIMIT = 20
     }
 
     private val repository: AppRepository
@@ -87,6 +89,81 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = 0
     )
+
+    // Assistant chat daily quota
+    val aiChatMessagesUsedToday: StateFlow<Int> = settingsRepository.aiChatMessagesUsedToday.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    /** Static app how-to documentation, read once from assets and reused for every chat turn. */
+    private val appGuideText: String by lazy {
+        runCatching {
+            getApplication<Application>().assets.open("app-guide.md").bufferedReader().use { it.readText() }
+        }.getOrDefault("")
+    }
+
+    /** In-memory Assistant conversation; intentionally not persisted (cleared on process death). */
+    private val _assistantMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val assistantMessages: StateFlow<List<ChatMessage>> = _assistantMessages.asStateFlow()
+
+    private val _isAssistantReplying = MutableStateFlow(false)
+    val isAssistantReplying: StateFlow<Boolean> = _isAssistantReplying.asStateFlow()
+
+    /**
+     * Sends a user message to the Assistant, grounded in the user's own tasks/notes/habits.
+     * Gated on the same consent + cloud-AI toggles as [summarizeNoteContent], plus a daily
+     * message quota — the "limitation" the Assistant is scoped to.
+     */
+    fun sendAssistantMessage(text: String) {
+        if (text.isBlank()) return
+        _assistantMessages.value = _assistantMessages.value + ChatMessage("user", text)
+
+        if (!consentGiven.value || !cloudAiEnabled.value) {
+            _assistantMessages.value = _assistantMessages.value + ChatMessage(
+                "assistant",
+                "The Assistant needs Cloud AI and data consent enabled in Settings to respond."
+            )
+            return
+        }
+        val quotaAvailable = isPremium.value || aiChatMessagesUsedToday.value < DAILY_AI_CHAT_LIMIT
+        if (!quotaAvailable) {
+            _assistantMessages.value = _assistantMessages.value + ChatMessage(
+                "assistant",
+                "You've reached today's limit of $DAILY_AI_CHAT_LIMIT messages. Try again tomorrow."
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            _isAssistantReplying.value = true
+            val snapshot = buildAssistantDataSnapshot()
+            val history = _assistantMessages.value.dropLast(1)
+            val reply = aiService.chat(history, snapshot, appGuideText, text)
+            settingsRepository.recordAiChatMessageUsed()
+            _assistantMessages.value = _assistantMessages.value + ChatMessage("assistant", reply)
+            _isAssistantReplying.value = false
+        }
+    }
+
+    private fun buildAssistantDataSnapshot(): String {
+        val taskLines = tasks.value.filter { !it.isCompleted }.take(20)
+            .joinToString("\n") { "- [${it.priority}] ${it.title} (due ${it.dueDate} ${it.dueTime})" }
+        val noteLines = notes.value.take(10).joinToString("\n") { "- ${it.title}" }
+        val habitLines = habits.value.filter { it.isActive }
+            .joinToString("\n") { "- ${it.title} (streak: ${it.currentStreak})" }
+        return """
+            OPEN TASKS:
+            ${taskLines.ifBlank { "(none)" }}
+
+            RECENT NOTES:
+            ${noteLines.ifBlank { "(none)" }}
+
+            ACTIVE HABITS:
+            ${habitLines.ifBlank { "(none)" }}
+        """.trimIndent()
+    }
     val billingRepository = BillingRepository(application)
     val isPremium: StateFlow<Boolean> = billingRepository.isPremium
 
@@ -701,60 +778,30 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getLogsForHabitFlow(habitId: Int) = repository.getLogsForHabitFlow(habitId)
 
-    // ---- Live habit GPS tracking session (survives navigating away from TrackHabitScreen) ----
+    // ---- Live habit GPS tracking session (owned by TrackingService so it survives backgrounding) ----
 
-    private var locationTracker: LocationTracker? = null
-    private var trackingTimerJob: kotlinx.coroutines.Job? = null
+    val trackingHabitId = TrackingService.trackingHabitId
+    val trackingIsRunning = TrackingService.trackingIsRunning
+    val trackingSeconds = TrackingService.trackingSeconds
+    val trackingDistanceMeters = TrackingService.trackingDistanceMeters
+    val trackingPath = TrackingService.trackingPath
 
-    val trackingHabitId = MutableStateFlow<Int?>(null)
-    val trackingIsRunning = MutableStateFlow(false)
-    val trackingSeconds = MutableStateFlow(0)
-    val trackingDistanceMeters = MutableStateFlow(0f)
-    val trackingPath = MutableStateFlow<List<com.google.android.gms.maps.model.LatLng>>(emptyList())
-
-    /** Returns the already-running tracker for this habit, or starts a fresh session. */
-    fun trackerForHabit(habitId: Int): LocationTracker {
-        if (trackingHabitId.value != habitId) {
-            locationTracker?.stop()
-            trackingHabitId.value = habitId
-            trackingSeconds.value = 0
-            trackingDistanceMeters.value = 0f
-            trackingPath.value = emptyList()
-        }
-        return locationTracker ?: LocationTracker(getApplication()).also { locationTracker = it }
+    /** Resets session counters if switching to a different habit. Safe to call every recomposition. */
+    fun prepareTrackingSession(habitId: Int) {
+        TrackingService.prepareSession(habitId)
     }
 
     fun startTrackingUpdates() {
-        trackingIsRunning.value = true
-        locationTracker?.start { distance, path ->
-            trackingDistanceMeters.value = distance
-            trackingPath.value = path
-        }
-        trackingTimerJob?.cancel()
-        trackingTimerJob = viewModelScope.launch {
-            while (true) {
-                kotlinx.coroutines.delay(1000)
-                trackingSeconds.value += 1
-            }
-        }
+        TrackingService.startOrResume(getApplication())
     }
 
     fun pauseTrackingUpdates() {
-        trackingIsRunning.value = false
-        locationTracker?.pause()
-        trackingTimerJob?.cancel()
+        TrackingService.pause(getApplication())
     }
 
     /** Ends the session for good — call after Save or discarding the tracked habit. */
     fun endTrackingSession() {
-        trackingIsRunning.value = false
-        trackingTimerJob?.cancel()
-        locationTracker?.stop()
-        locationTracker = null
-        trackingHabitId.value = null
-        trackingSeconds.value = 0
-        trackingDistanceMeters.value = 0f
-        trackingPath.value = emptyList()
+        TrackingService.end(getApplication())
     }
 
     /** Event operations — toggle done state */

@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,6 +48,7 @@ fun ProfileScreen(
     val cloudSyncEnabled by viewModel.cloudSyncEnabled.collectAsStateWithLifecycle()
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
     val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val habitsCompletedToday by viewModel.habitsCompletedTodayCount.collectAsStateWithLifecycle()
 
     val tasksCompleted = tasks.count { it.isCompleted }
     val notesCreated = notes.size
@@ -202,69 +201,44 @@ fun ProfileScreen(
                     )
                     StatCard(
                         modifier = Modifier.weight(1f).aspectRatio(1f),
-                        icon = Icons.Default.Timer,
+                        icon = Icons.Default.LocalFireDepartment,
                         iconTint = MaterialTheme.colorScheme.primary,
-                        value = "12h",
-                        label = "Time Saved"
+                        value = habitsCompletedToday.toString(),
+                        label = "Habits Today"
                     )
                 }
             }
 
-            // Achievements
-            Column {
-                Text("Achievements", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    item { AchievementBadge(icon = Icons.Default.WbSunny, color = MaterialTheme.colorScheme.tertiary, label = "Early Bird") }
-                    item { AchievementBadge(icon = Icons.Default.MilitaryTech, color = MaterialTheme.colorScheme.primary, label = "Task Master") }
-                    item { AchievementBadge(icon = Icons.Default.LocalFireDepartment, color = MaterialTheme.colorScheme.secondary, label = "7 Day Streak") }
-                    item { AchievementBadge(icon = Icons.Default.Lock, color = MaterialTheme.colorScheme.onSurfaceVariant, label = "Locked", isLocked = true) }
-                }
-            }
-
-            // Storage
+            // Sync
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(12.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                        Text("Storage", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                        Text("2.4GB / 10GB", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    LinearProgressIndicator(
-                        progress = { 0.24f },
-                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                if (cloudSyncEnabled) Icons.Default.CloudDone else Icons.Default.CloudOff,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                if (cloudSyncEnabled) "Synced across devices" else "Sync is off",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = cloudSyncEnabled,
-                            onCheckedChange = { viewModel.setCloudSyncEnabled(it) }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            if (cloudSyncEnabled) Icons.Default.CloudDone else Icons.Default.CloudOff,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            if (cloudSyncEnabled) "Synced across devices" else "Sync is off",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    Switch(
+                        checked = cloudSyncEnabled,
+                        onCheckedChange = { viewModel.setCloudSyncEnabled(it) }
+                    )
                 }
             }
 
@@ -300,23 +274,5 @@ fun StatCard(modifier: Modifier = Modifier, icon: ImageVector, iconTint: Color, 
                 Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-    }
-}
-
-@Composable
-fun AchievementBadge(icon: ImageVector, color: Color, label: String, isLocked: Boolean = false) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(if (isLocked) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(32.dp))
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
     }
 }

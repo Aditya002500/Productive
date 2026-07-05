@@ -2,8 +2,10 @@ package com.example.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.LocationTracker
 import com.example.ui.AppViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -49,10 +52,11 @@ fun TrackHabitScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // The tracker instance and its accumulated state live on the ViewModel, not this
-    // composable, so a session keeps running (and can be resumed) even after the user
-    // navigates back — see the floating tracking bar in MainActivity.
-    val tracker = remember(habitId) { viewModel.trackerForHabit(habitId) }
+    // The tracking session lives in TrackingService, not this composable, so it keeps
+    // running (and posts a notification) even after the user navigates away or exits
+    // the app entirely — see the floating tracking bar in MainActivity.
+    LaunchedEffect(habitId) { viewModel.prepareTrackingSession(habitId) }
+    val recenterTracker = remember { LocationTracker(context) }
     val isTracking by viewModel.trackingIsRunning.collectAsStateWithLifecycle()
     val secondsElapsed by viewModel.trackingSeconds.collectAsStateWithLifecycle()
     val distanceMeters by viewModel.trackingDistanceMeters.collectAsStateWithLifecycle()
@@ -69,7 +73,7 @@ fun TrackHabitScreen(
     }
 
     fun recenterOnUser() {
-        tracker.getLastLocation { location ->
+        recenterTracker.getLastLocation { location ->
             location?.let {
                 coroutineScope.launch {
                     cameraPositionState.animate(
@@ -80,9 +84,16 @@ fun TrackHabitScreen(
         }
     }
 
+    val trackingPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS)
+    } else {
+        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true
         hasLocationPermission = granted
         if (granted) viewModel.startTrackingUpdates()
     }
@@ -131,6 +142,7 @@ fun TrackHabitScreen(
                     .fillMaxWidth()
                     .height(320.dp)
                     .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
@@ -156,7 +168,7 @@ fun TrackHabitScreen(
                 FilledIconButton(
                     onClick = {
                         if (hasLocationPermission) recenterOnUser()
-                        else permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        else permissionLauncher.launch(trackingPermissions)
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -189,7 +201,7 @@ fun TrackHabitScreen(
                 } else if (hasLocationPermission) {
                     viewModel.startTrackingUpdates()
                 } else {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    permissionLauncher.launch(trackingPermissions)
                 }
             }) {
                 Icon(

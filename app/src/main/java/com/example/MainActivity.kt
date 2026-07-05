@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -193,10 +195,17 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            // Track Habit (live GPS distance)
+                            // Track Habit (live GPS distance). No-op transitions: the embedded
+                            // GoogleMap is a SurfaceView that doesn't participate in Compose's
+                            // default crossfade/predictive-back transition, so animating this
+                            // route flashes the window's black background mid-transition.
                             composable(
                                 route = "track_habit/{habitId}",
-                                arguments = listOf(navArgument("habitId") { type = NavType.IntType })
+                                arguments = listOf(navArgument("habitId") { type = NavType.IntType }),
+                                enterTransition = { EnterTransition.None },
+                                exitTransition = { ExitTransition.None },
+                                popEnterTransition = { EnterTransition.None },
+                                popExitTransition = { ExitTransition.None }
                             ) { backStackEntry ->
                                 val habitId = backStackEntry.arguments?.getInt("habitId") ?: 0
                                 TrackHabitScreen(
@@ -385,6 +394,20 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .padding(16.dp)
+                            )
+                        }
+
+                        // Floating Assistant entry point, visible on every authenticated screen.
+                        val authRoutes = setOf("splash", "welcome", "login", "register", "onboarding")
+                        if (currentRoute !in authRoutes) {
+                            com.example.ui.components.AssistantBubble(
+                                viewModel = appViewModel,
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(
+                                        end = 16.dp,
+                                        bottom = if (trackingHabitId != null && currentRoute != "track_habit/{habitId}") 160.dp else 88.dp
+                                    )
                             )
                         }
                         }
