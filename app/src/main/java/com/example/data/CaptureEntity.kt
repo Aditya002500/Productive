@@ -1,14 +1,16 @@
 package com.example.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 /**
  * A captured screenshot / imported image and everything the pipeline derives
  * from it. Per the PRD, every AI-produced field stays user-editable and the
  * original image plus raw OCR text are always preserved.
  */
-@Entity(tableName = "captures")
+@Entity(tableName = "captures", indices = [Index(value = ["syncId"], unique = true)])
 data class CaptureEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
@@ -25,5 +27,7 @@ data class CaptureEntity(
     val entities: String = "",         // JSON: dates, urls, phones, prices, etc.
     val confidence: Float = 0f,        // 0..1 extraction confidence
     val sourceType: String = "screenshot", // "screenshot", "imported image", "shared image"
-    val isImportant: Boolean = false
+    val isImportant: Boolean = false,
+    val syncId: String = UUID.randomUUID().toString(),
+    val updatedAt: Long = System.currentTimeMillis()
 )

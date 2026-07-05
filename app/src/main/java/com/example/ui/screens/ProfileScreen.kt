@@ -1,7 +1,11 @@
 package com.example.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
@@ -42,12 +46,19 @@ fun ProfileScreen(
 ) {
     val userName by viewModel.userProfileName.collectAsStateWithLifecycle()
     val userEmail by viewModel.userProfileEmail.collectAsStateWithLifecycle()
+    val userPhotoUrl by viewModel.userProfilePhotoUrl.collectAsStateWithLifecycle()
+    val cloudSyncEnabled by viewModel.cloudSyncEnabled.collectAsStateWithLifecycle()
     val tasks by viewModel.tasks.collectAsStateWithLifecycle()
     val notes by viewModel.notes.collectAsStateWithLifecycle()
 
     val tasksCompleted = tasks.count { it.isCompleted }
     val notesCreated = notes.size
-    var showSyncComingSoon by remember { mutableStateOf(false) }
+
+    val photoPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) viewModel.updateProfilePhoto(uri)
+    }
 
     Scaffold(
         topBar = {
@@ -80,16 +91,40 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(modifier = Modifier.size(96.dp)) {
-                    AsyncImage(
-                        model = "https://lh3.googleusercontent.com/aida-public/AB6AXuBx_jsFWhBlxLrpObHHlbG-IbGZ0xN9mBuTlqtoF8Fn6ZmPcSThd3KnIZ7wJax1iv_JVbB0sIoCPq_vT6NfkA2W5nlqStlTMgLJSDEBu4HpsBTHBADPUr2J2U44fRfDW86Kmf_W7KqgMLiqRyWqf69b5odSFf_dnNUe1W7C5BVrtdP89tDN9MDMeul1WfsZ8ViuwWsG14m6zktv3PbDs5nfVGvNbyp7cOOdfTQTGyRT7y-IpRIIZL5FZYpugYvtZWWAR7I5vIzZ8FmK",
-                        contentDescription = "User Avatar",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                            .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(96.dp)
+                        .clickable {
+                            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        }
+                ) {
+                    if (userPhotoUrl.isNullOrBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.AccountCircle,
+                                contentDescription = "User Avatar",
+                                modifier = Modifier.size(72.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    } else {
+                        AsyncImage(
+                            model = userPhotoUrl,
+                            contentDescription = "User Avatar",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                                .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                     Box(
                         modifier = Modifier
                             .size(24.dp)
@@ -98,7 +133,7 @@ fun ProfileScreen(
                             .border(2.dp, MaterialTheme.colorScheme.background, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.CameraAlt, contentDescription = "Change photo", tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(14.dp))
                     }
                 }
                 
@@ -212,13 +247,23 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.CloudDone, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                            Icon(
+                                if (cloudSyncEnabled) Icons.Default.CloudDone else Icons.Default.CloudOff,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Last synced: 2 mins ago", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(
+                                if (cloudSyncEnabled) "Synced across devices" else "Sync is off",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                        TextButton(onClick = { showSyncComingSoon = true }) {
-                            Text("Sync Now")
-                        }
+                        Switch(
+                            checked = cloudSyncEnabled,
+                            onCheckedChange = { viewModel.setCloudSyncEnabled(it) }
+                        )
                     }
                 }
             }
@@ -235,17 +280,6 @@ fun ProfileScreen(
                 }
             }
         }
-    }
-
-    if (showSyncComingSoon) {
-        AlertDialog(
-            onDismissRequest = { showSyncComingSoon = false },
-            title = { Text("Coming Soon") },
-            text = { Text("Cloud sync isn't wired up yet — all your data is stored securely on this device only.") },
-            confirmButton = {
-                TextButton(onClick = { showSyncComingSoon = false }) { Text("Got it") }
-            }
-        )
     }
 }
 

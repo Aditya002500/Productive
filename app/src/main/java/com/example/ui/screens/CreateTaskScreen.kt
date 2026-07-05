@@ -19,6 +19,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppViewModel
+import com.example.util.NaturalDateParser
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+private fun LocalDate.toDisplayLabel(): String = when (this) {
+    LocalDate.now() -> "Today"
+    LocalDate.now().plusDays(1) -> "Tomorrow"
+    else -> format(DateTimeFormatter.ofPattern("EEE, MMM d"))
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +38,9 @@ fun CreateTaskScreen(
     val draftTitle by viewModel.taskDraftTitle.collectAsStateWithLifecycle()
     var title by remember { mutableStateOf(draftTitle ?: "") }
     var description by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf("Med") }
+    var priority by remember { mutableStateOf("Medium") }
+    var dueDateInput by remember { mutableStateOf("") }
+    val parsedDueDate = remember(dueDateInput) { NaturalDateParser.parse(dueDateInput) }
 
     LaunchedEffect(Unit) {
         viewModel.consumeTaskDraft()
@@ -64,7 +75,7 @@ fun CreateTaskScreen(
                             viewModel.addTask(
                                 title = title,
                                 priority = priority,
-                                dueDate = "Today",
+                                dueDate = (parsedDueDate ?: LocalDate.now()).toDisplayLabel(),
                                 dueTime = "",
                                 notesContent = description,
                                 subtaskTitles = emptyList()
@@ -152,7 +163,25 @@ fun CreateTaskScreen(
                         Column {
                             Icon(Icons.Default.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Today", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                            TextField(
+                                value = dueDateInput,
+                                onValueChange = { dueDateInput = it },
+                                placeholder = { Text("today, tomorrow...", fontSize = 13.sp) },
+                                singleLine = true,
+                                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Text(
+                                (parsedDueDate ?: LocalDate.now()).toDisplayLabel(),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -196,7 +225,7 @@ fun CreateTaskScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         PriorityButton(text = "Low", isSelected = priority == "Low", onClick = { priority = "Low" }, modifier = Modifier.weight(1f))
-                        PriorityButton(text = "Med", isSelected = priority == "Med", onClick = { priority = "Med" }, modifier = Modifier.weight(1f))
+                        PriorityButton(text = "Med", isSelected = priority == "Medium", onClick = { priority = "Medium" }, modifier = Modifier.weight(1f))
                         PriorityButton(text = "High", isSelected = priority == "High", onClick = { priority = "High" }, modifier = Modifier.weight(1f))
                     }
                 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,8 +55,17 @@ fun CaptureInboxScreen(
     LaunchedEffect(categoryTabs) {
         if (selectedCategory !in categoryTabs) selectedCategory = "All"
     }
-    val captures = remember(allCaptures, selectedCategory) {
-        if (selectedCategory == "All") allCaptures else allCaptures.filter { it.category == selectedCategory }
+
+    val allTags by viewModel.allCaptureTags.collectAsStateWithLifecycle()
+    var selectedTag by remember { mutableStateOf("All") }
+    LaunchedEffect(allTags) {
+        if (selectedTag != "All" && selectedTag !in allTags) selectedTag = "All"
+    }
+
+    val captures = remember(allCaptures, selectedCategory, selectedTag) {
+        allCaptures
+            .filter { selectedCategory == "All" || it.category == selectedCategory }
+            .filter { selectedTag == "All" || it.tags.split(",").map { t -> t.trim() }.contains(selectedTag) }
     }
 
     // Android Photo Picker — no runtime permission required.
@@ -74,32 +84,28 @@ fun CaptureInboxScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("CaptureFlow Inbox", fontWeight = FontWeight.SemiBold, fontSize = 20.sp) },
-                actions = {
-                    IconButton(onClick = { showCaptureDialog = true }) {
-                        Icon(Icons.Default.Science, contentDescription = "Try a demo capture")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    photoPicker.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                text = { Text("Import") },
-                icon = { Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Import screenshot") }
-            )
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                FloatingActionButton(
+                    onClick = { showCaptureDialog = true },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    Icon(Icons.Default.Science, contentDescription = "Try a demo capture")
+                }
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        photoPicker.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    text = { Text("Import") },
+                    icon = { Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Import screenshot") }
+                )
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -117,6 +123,24 @@ fun CaptureInboxScreen(
                         onClick = { selectedCategory = category },
                         text = { Text(if (category == "All") "All Captures" else category) }
                     )
+                }
+            }
+
+            if (allTags.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    (listOf("All") + allTags).forEach { tag ->
+                        FilterChip(
+                            selected = selectedTag == tag,
+                            onClick = { selectedTag = tag },
+                            label = { Text(tag) }
+                        )
+                    }
                 }
             }
 
@@ -561,13 +585,33 @@ fun AiSummaryScreen(
     captureId: Int,
     viewModel: AppViewModel,
     onNavigateToCreateTask: () -> Unit,
+    onNavigateToSubscription: () -> Unit,
     onBack: () -> Unit
 ) {
     val captures by viewModel.captures.collectAsStateWithLifecycle()
     val capture = captures.find { it.id == captureId }
     val isAnalyzing by viewModel.isAnalyzing.collectAsStateWithLifecycle()
+    val aiSummariesUsedToday by viewModel.aiSummariesUsedToday.collectAsStateWithLifecycle()
+    val quotaExceeded by viewModel.quotaExceeded.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
+    if (quotaExceeded) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearQuotaExceeded() },
+            title = { Text("Daily AI summary limit reached") },
+            text = { Text("You've used all ${AppViewModel.DAILY_AI_SUMMARY_LIMIT} free AI summaries for today. Wait until tomorrow, or upgrade to Premium for unlimited summaries.") },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.clearQuotaExceeded()
+                    onNavigateToSubscription()
+                }) { Text("Get Premium") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.clearQuotaExceeded() }) { Text("Wait until tomorrow") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -623,6 +667,13 @@ fun AiSummaryScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "$aiSummariesUsedToday/${AppViewModel.DAILY_AI_SUMMARY_LIMIT} AI summaries used today",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
             Text("Suggested Actions", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(12.dp))
@@ -669,7 +720,8 @@ fun AiSummaryScreen(
                         viewModel.addNote(
                             title = capture?.title ?: "Note",
                             content = capture?.summary?.ifBlank { capture.extractedText } ?: (capture?.extractedText ?: ""),
-                            date = "Today"
+                            date = "Today",
+                            referenceImageUrl = capture?.imageUrl
                         )
                         coroutineScope.launch { snackbarHostState.showSnackbar("Note created") }
                     }

@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import android.app.Activity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,8 +22,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -26,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,10 +49,23 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 import com.example.data.EventEntity
+import com.example.data.HabitLogEntity
+import com.example.data.calendar.GoogleCalendarService
 import com.example.ui.theme.accents
 import com.example.ui.AppViewModel
 import com.example.ui.components.TexturedBackground
 import com.example.ui.components.CaptureFlowBottomNavigation
+import kotlinx.coroutines.launch
+
+/** A quick-fill preset for the Add Event dialog. colorIndex maps into the dialog's eventPalette. */
+data class EventTemplate(val title: String, val timeRange: String, val colorIndex: Int)
+
+val EVENT_TEMPLATES = listOf(
+    EventTemplate("Meeting", "10:00 - 11:00 AM", 0),
+    EventTemplate("Workout", "6:00 - 7:00 AM", 3),
+    EventTemplate("Study Session", "2:00 - 4:00 PM", 2),
+    EventTemplate("Meal", "12:30 - 1:00 PM", 1)
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,17 +80,97 @@ fun PlannerScreen(
     var showAddEventDialog by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("CaptureFlow Planner", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
-                actions = {
-                    IconButton(onClick = { showAddEventDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Event")
+    val context = LocalContext.current
+    val activity = context as? ComponentActivity
+    val calendarService = remember { GoogleCalendarService() }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var isImportingCalendar by remember { mutableStateOf(false) }
+    var pendingImportActivity by remember { mutableStateOf<Activity?>(null) }
+
+    val consentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        val currentActivity = pendingImportActivity
+        if (result.resultCode == Activity.RESULT_OK && currentActivity != null) {
+            coroutineScope.launch {
+                try {
+                    val authResult = calendarService.authorize(currentActivity)
+                    val token = authResult.accessToken
+                    if (token != null) {
+                        val importedEvents = calendarService.fetchUpcomingEvents(token)
+                        val count = viewModel.importGoogleCalendarEvents(importedEvents)
+                        snackbarHostState.showSnackbar("Imported $count event(s) from Google Calendar.")
+                    } else {
+                        snackbarHostState.showSnackbar("Google Calendar authorization was not completed.")
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
-            )
+                } catch (e: Exception) {
+                    snackbarHostState.showSnackbar("Couldn't import from Google Calendar.")
+                } finally {
+                    isImportingCalendar = false
+                }
+            }
+        } else {
+            isImportingCalendar = false
+        }
+    }
+
+    fun runGoogleCalendarImport() {
+        val currentActivity = activity ?: return
+        pendingImportActivity = currentActivity
+        coroutineScope.launch {
+            isImportingCalendar = true
+            try {
+                val authResult = calendarService.authorize(currentActivity)
+                val token = authResult.accessToken
+                val pendingIntent = authResult.pendingIntent
+                when {
+                    token != null -> {
+                        val importedEvents = calendarService.fetchUpcomingEvents(token)
+                        val count = viewModel.importGoogleCalendarEvents(importedEvents)
+                        snackbarHostState.showSnackbar("Imported $count event(s) from Google Calendar.")
+                        isImportingCalendar = false
+                    }
+                    authResult.hasResolution() && pendingIntent != null -> {
+                        // isImportingCalendar stays true until consentLauncher's callback finishes.
+                        consentLauncher.launch(IntentSenderRequest.Builder(pendingIntent.intentSender).build())
+                    }
+                    else -> {
+                        snackbarHostState.showSnackbar("Couldn't authorize Google Calendar access.")
+                        isImportingCalendar = false
+                    }
+                }
+            } catch (e: Exception) {
+                snackbarHostState.showSnackbar("Couldn't import from Google Calendar.")
+                isImportingCalendar = false
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SmallFloatingActionButton(
+                    onClick = { if (!isImportingCalendar) runGoogleCalendarImport() },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    if (isImportingCalendar) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.Sync, contentDescription = "Import from Google Calendar")
+                    }
+                }
+                FloatingActionButton(
+                    onClick = { showAddEventDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Event")
+                }
+            }
         }
     ) { innerPadding ->
         Column(
@@ -137,6 +240,25 @@ fun PlannerScreen(
             title = { Text("Add Event", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Quick Templates:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        EVENT_TEMPLATES.forEach { template ->
+                            AssistChip(
+                                onClick = {
+                                    title = template.title
+                                    timeRange = template.timeRange
+                                    selectedColorIndex = template.colorIndex
+                                },
+                                label = { Text(template.title) }
+                            )
+                        }
+                    }
+
                     OutlinedTextField(
                         value = title,
                         onValueChange = { title = it },
@@ -233,6 +355,10 @@ fun PlannerScreen(
 fun DayView(events: List<EventEntity>, viewModel: AppViewModel, selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
     val monthName = selectedDate.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
     val dayEvents = events.filter { it.monthName.equals(monthName, ignoreCase = true) && it.day == selectedDate.dayOfMonth }
+    val habits by viewModel.habits.collectAsStateWithLifecycle()
+    val recentLogs by viewModel.recentHabitLogs.collectAsStateWithLifecycle()
+    val selectedEpochDay = remember(selectedDate) { selectedDate.toEpochDay() }
+    val dayHabitLogs = remember(recentLogs, selectedEpochDay) { recentLogs.filter { it.epochDay == selectedEpochDay } }
 
     Column(
         modifier = Modifier
@@ -304,74 +430,138 @@ fun DayView(events: List<EventEntity>, viewModel: AppViewModel, selectedDate: Lo
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 dayEvents.forEach { event ->
                     val containerColor = when (event.color) {
-                        0 -> MaterialTheme.colorScheme.primaryContainer // Emerald light
-                        1 -> MaterialTheme.colorScheme.primaryContainer // Lime light
-                        2 -> MaterialTheme.colorScheme.primaryContainer // Green light
-                        else -> MaterialTheme.colorScheme.primaryContainer // Teal light
+                        0 -> MaterialTheme.colorScheme.primaryContainer
+                        1 -> MaterialTheme.colorScheme.primaryContainer
+                        2 -> MaterialTheme.colorScheme.primaryContainer
+                        else -> MaterialTheme.colorScheme.primaryContainer
                     }
-
                     val accentColor = when (event.color) {
                         0 -> MaterialTheme.colorScheme.primary
                         1 -> MaterialTheme.colorScheme.secondary
                         2 -> MaterialTheme.colorScheme.tertiary
                         else -> MaterialTheme.colorScheme.error
                     }
+                    val doneAlpha = if (event.isDone) 0.5f else 1f
 
                     Row(
                         verticalAlignment = Alignment.Top,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Hour column
                         Text(
                             text = event.timeRange.substringBefore(" -").substringBefore(" PM").substringBefore(" AM"),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = doneAlpha)
                             ),
                             modifier = Modifier.width(60.dp)
                         )
 
-                        // Event Block Card
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = containerColor),
+                            colors = CardDefaults.cardColors(containerColor = containerColor.copy(alpha = doneAlpha)),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(72.dp),
-                            border = BorderStroke(1.dp, accentColor.copy(alpha = 0.3f))
+                            border = BorderStroke(1.dp, if (event.isDone) MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) else accentColor.copy(alpha = 0.3f))
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(horizontal = 16.dp),
+                                    .padding(horizontal = 12.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column(verticalArrangement = Arrangement.Center) {
+                                Column(verticalArrangement = Arrangement.Center, modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = event.title,
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = doneAlpha),
+                                            textDecoration = if (event.isDone) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
                                         ),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     if (event.location.isNotBlank()) {
                                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
-                                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = accentColor, modifier = Modifier.size(12.dp))
+                                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = accentColor.copy(alpha = doneAlpha), modifier = Modifier.size(12.dp))
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
                                                 text = event.location,
-                                                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = doneAlpha))
                                             )
                                         }
                                     }
                                 }
 
-                                IconButton(onClick = { viewModel.deleteEvent(event) }) {
-                                    Icon(Icons.Default.Schedule, contentDescription = "Delete", tint = accentColor)
+                                // Mark done button
+                                IconButton(onClick = { viewModel.toggleEventDone(event) }) {
+                                    Icon(
+                                        if (event.isDone) Icons.Default.CheckCircle else Icons.Default.CheckCircleOutline,
+                                        contentDescription = if (event.isDone) "Mark undone" else "Mark done",
+                                        tint = if (event.isDone) MaterialTheme.colorScheme.primary else accentColor.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
+                                IconButton(onClick = { viewModel.deleteEvent(event) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = accentColor.copy(alpha = doneAlpha), modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Habit completions for this day ──────────────────────────────
+            if (dayHabitLogs.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    "Habit Activity",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    dayHabitLogs.forEach { log ->
+                        val habit = habits.find { it.id == log.habitId }
+                        if (habit != null) {
+                            val info = habitTypeInfo(habit.habitType)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(info.emoji, style = MaterialTheme.typography.bodyLarge)
+                                Spacer(Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(habit.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                    if (log.metricValue > 0f) {
+                                        val display = if (log.metricValue == kotlin.math.floor(log.metricValue.toDouble()).toFloat()) log.metricValue.toInt().toString() else "%.1f".format(log.metricValue)
+                                        Text(
+                                            "$display ${habit.metricUnit}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                    }
+                                    if (log.note.isNotBlank()) {
+                                        Text(
+                                            "\"${log.note}\"",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = "Completed",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
                             }
                         }
                     }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudQueue
 import androidx.compose.material.icons.filled.DeleteForever
@@ -90,63 +91,29 @@ fun AiPrivacyScreen(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            // On-device Toggle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("On-device Processing", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Text("Scan screenshot text on this device with ML Kit OCR. Turning this off pauses automatic capture processing.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = onDeviceAiEnabled,
-                    onCheckedChange = { viewModel.setOnDeviceAiEnabled(it) },
-                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
-                )
-            }
+            SettingsToggleItem(
+                icon = Icons.Default.PhoneAndroid,
+                title = "On-device Processing",
+                subtitle = "Scan screenshot text on this device with ML Kit OCR. Turning this off pauses automatic capture processing.",
+                checked = onDeviceAiEnabled,
+                onCheckedChange = { viewModel.setOnDeviceAiEnabled(it) }
+            )
 
-            // Cloud AI Toggle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.CloudQueue, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Cloud AI Enrichment", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Text("Send only extracted text (never images) to our AI provider for smarter titles, summaries and categories. Off = fully on-device, coarser results.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = cloudAiEnabled,
-                    onCheckedChange = { viewModel.setCloudAiEnabled(it) },
-                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
-                )
-            }
+            SettingsToggleItem(
+                icon = Icons.Default.CloudQueue,
+                title = "Cloud AI Enrichment",
+                subtitle = "Send only extracted text (never images) to our AI provider for smarter titles, summaries and categories. Off = fully on-device, coarser results.",
+                checked = cloudAiEnabled,
+                onCheckedChange = { viewModel.setCloudAiEnabled(it) }
+            )
 
-            // Analytics Toggle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Share Analytics", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Text("Anonymous usage counts only — never OCR text, screenshot content, or note bodies.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(
-                    checked = analyticsEnabled,
-                    onCheckedChange = { viewModel.setAnalyticsEnabled(it) },
-                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
-                )
-            }
+            SettingsToggleItem(
+                icon = Icons.Default.Analytics,
+                title = "Share Analytics",
+                subtitle = "Anonymous usage counts only — never OCR text, screenshot content, or note bodies.",
+                checked = analyticsEnabled,
+                onCheckedChange = { viewModel.setAnalyticsEnabled(it) }
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 

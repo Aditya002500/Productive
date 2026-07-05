@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="CaptureFlow is a screenshot-first productivity companion. Organize tasks, manage schedules, and sync your Google Calendar locally.">
+    <title>CaptureFlow — Screenshot-First Productivity Companion</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0B0E0D;
+            --surface-color: #1E2422;
+            --primary-color: #22C55E;
+            --primary-glow: rgba(34, 197, 94, 0.15);
+            --text-main: #FFFFFF;
+            --text-secondary: #cbd5d0;
+            --border-color: #333b37;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glow effects */
+        .ambient-glow-1 {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(11, 14, 13, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            bottom: -50px;
+            right: -100px;
+            background: radial-gradient(circle, rgba(21, 128, 61, 0.1) 0%, rgba(11, 14, 13, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        main {
+            max-width: 700px;
+            width: 100%;
+            margin: auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 40px 20px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        .logo-img {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary-glow);
+            border: 2px solid var(--primary-color);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 32px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .description-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: left;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+        }
+
+        .description-card p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+        }
+
+        .description-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        footer {
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            margin-top: 40px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+            margin: 0 10px;
+        }
+
+        footer a:hover {
+            color: #4ade80;
+            text-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+        }
+
+        .dev-info {
+            font-size: 0.8rem;
+            margin-top: 16px;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(0.98);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .description-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-glow-1" id="glow1"></div>
+    <div class="ambient-glow-2" id="glow2"></div>
+
+    <main>
+        <div class="logo-container">
+            <!-- Utilizing the local C logo we generated -->
+            <img src="/app_logo.png" alt="CaptureFlow Logo" class="logo-img" id="appLogo">
+        </div>
+
+        <h1>CaptureFlow</h1>
+        <p class="tagline">Screenshot Intelligence</p>
+
+        <div class="description-card">
+            <span class="feature-badge" id="badgeFeature">Privacy-First Integration</span>
+            <p>
+                <strong>CaptureFlow</strong> is a smart personal organizer designed to help you capture notes, structure
+                lists, and build your planner efficiently using screenshot intelligence.
+            </p>
+            <p>
+                To provide a unified view of your day, the app offers a one-way, read-only <strong>Google Calendar
+                    Import</strong>. This feature securely reads your primary calendar's upcoming events and maps them
+                directly into your local planner timeline alongside your captures.
+            </p>
+            <p>
+                <strong>Your data belongs to you:</strong> CaptureFlow works 100% locally. Your Google Calendar data is
+                processed entirely on your device and is never uploaded, shared, or sent to external servers.
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>
+            <a href="/privacy.html" id="linkPrivacy">Privacy Policy</a> |
+            <a href="/terms.html" id="linkTerms">Terms of Service</a>
+        </p>
+        <p class="dev-info" id="devInfoText">Developer Contact: aditya.kumar25025@gmail.com</p>
+    </footer>
+</body>
+
+</html>

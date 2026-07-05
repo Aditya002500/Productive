@@ -148,11 +148,45 @@ class MainActivity : ComponentActivity() {
                                         else navController.navigate("note_editor/$noteId")
                                     },
                                     onNavigateToNoteDetail = { noteId ->
-                                        navController.navigate("note_detail/$noteId")
+                                        navController.navigate("note_editor/$noteId")
                                     },
                                     onNavigateToCaptureDetail = { captureId ->
                                         navController.navigate("capture_detail/$captureId")
+                                    },
+                                    onNavigateToProfile = { navController.navigate("profile") },
+                                    onNavigateToHabits = { navController.navigate("habits") },
+                                    onNavigateToFocusTimer = { navController.navigate("focus_timer") },
+                                    onNavigateToFriends = { navController.navigate("friends") },
+                                    onSignOut = {
+                                        appViewModel.signOut()
+                                        navController.navigate("welcome") {
+                                            popUpTo("main") { inclusive = true }
+                                        }
                                     }
+                                )
+                            }
+
+                            // Habits
+                            composable("habits") {
+                                HabitsScreen(
+                                    viewModel = appViewModel,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+
+                            // Focus Timer
+                            composable("focus_timer") {
+                                FocusTimerScreen(
+                                    viewModel = appViewModel,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+
+                            // Friends / compete
+                            composable("friends") {
+                                FriendsScreen(
+                                    viewModel = appViewModel,
+                                    onBack = { navController.popBackStack() }
                                 )
                             }
 
@@ -191,20 +225,6 @@ class MainActivity : ComponentActivity() {
                                     noteId = if (noteId == -1) null else noteId,
                                     viewModel = appViewModel,
                                     onBack = { navController.popBackStack() }
-                                )
-                            }
-
-                            // Note Detail
-                            composable(
-                                route = "note_detail/{noteId}",
-                                arguments = listOf(navArgument("noteId") { type = NavType.IntType })
-                            ) { backStackEntry ->
-                                val noteId = backStackEntry.arguments?.getInt("noteId") ?: 0
-                                NoteDetailScreen(
-                                    noteId = noteId,
-                                    viewModel = appViewModel,
-                                    onBack = { navController.popBackStack() },
-                                    onEdit = { id -> navController.navigate("note_editor/$id") }
                                 )
                             }
 
@@ -248,6 +268,7 @@ class MainActivity : ComponentActivity() {
                                     captureId = captureId,
                                     viewModel = appViewModel,
                                     onNavigateToCreateTask = { navController.navigate("create_task") },
+                                    onNavigateToSubscription = { navController.navigate("subscription") },
                                     onBack = { navController.popBackStack() }
                                 )
                             }

@@ -54,6 +54,36 @@ class AiService {
         )
     }
 
+    /** Plain-text model (no forced JSON mime type) for simple prose responses like note summaries. */
+    private val textModel by lazy {
+        Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+            modelName = "gemini-2.5-flash",
+            generationConfig = generationConfig {
+                temperature = 0.3f
+            }
+        )
+    }
+
+    /** Summarizes a user-authored note into 1-2 plain-text sentences. Falls back to a truncated echo of the note on any failure. */
+    suspend fun summarizeNote(text: String): String {
+        if (text.isBlank()) return ""
+        val prompt = """
+            Summarize the following personal note in 1-2 concise sentences. Return ONLY the
+            summary text, no preamble, no markdown, no quotes.
+
+            NOTE:
+            ""${'"'}
+            ${text.take(4000)}
+            ""${'"'}
+        """.trimIndent()
+        return try {
+            textModel.generateContent(prompt).text?.trim()?.ifBlank { null } ?: text.take(140)
+        } catch (e: Exception) {
+            Log.w(TAG, "AI summarizeNote failed, using fallback: ${e.message}")
+            text.take(140)
+        }
+    }
+
     suspend fun analyze(ocrText: String): AiAnalysis {
         if (ocrText.isBlank()) return fallback("")
 

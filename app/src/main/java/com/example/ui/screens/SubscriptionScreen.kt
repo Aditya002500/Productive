@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ fun SubscriptionScreen(
     viewModel: AppViewModel,
     onBack: () -> Unit
 ) {
+    val activity = LocalContext.current as? android.app.Activity
     var showComingSoon by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -106,7 +108,14 @@ fun SubscriptionScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { showComingSoon = true },
+                onClick = {
+                    val currentActivity = activity
+                    if (currentActivity != null) {
+                        viewModel.billingRepository.launchPurchaseFlow(currentActivity)
+                    } else {
+                        showComingSoon = true
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
@@ -118,7 +127,7 @@ fun SubscriptionScreen(
             }
 
             TextButton(
-                onClick = { showComingSoon = true },
+                onClick = { viewModel.billingRepository.restorePurchases() },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
                 Text("Restore Purchases", color = MaterialTheme.colorScheme.onSurfaceVariant)

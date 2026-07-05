@@ -11,9 +11,11 @@ import androidx.room.RoomDatabase
         SubTaskEntity::class,
         NoteEntity::class,
         CaptureEntity::class,
-        EventEntity::class
+        EventEntity::class,
+        HabitEntity::class,
+        HabitLogEntity::class
     ],
-    version = 3,
+    version = 10,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

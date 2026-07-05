@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.example.R
 import com.example.ui.AppViewModel
 import com.example.ui.auth.GoogleSignInResult
@@ -71,8 +70,8 @@ fun LoginScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // App Logo
-            AsyncImage(
-                model = "https://lh3.googleusercontent.com/aida/AP1WRLvioOHBLAnoi9rs2otwVh9yjyZjWkl0tR_ld-I-yTZhgQsS7treUP_aStJJtACtxFQU8vZ572yXP3Ox06nUeN-CdFsHMDiPoZyrUGih6rtG0XOuycSZUh-2CjH4U7TBVoRQYyFomtvRKKpvaeNMcK1_NJjHrqpbwgcehviZHE34ezhiiWLqZO70UxyeUNtDFgk4JWNbB4GtOrS8KN9Fw7QRwA2_sETh2gzhDNcDxkTlP9rWE-pPprz56KNI",
+            Image(
+                painter = painterResource(R.drawable.ic_launcher_foreground),
                 contentDescription = "CaptureFlow Logo",
                 modifier = Modifier
                     .size(80.dp)

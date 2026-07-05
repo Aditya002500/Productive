@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,11 +20,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +34,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppViewModel
 import com.example.ui.theme.ThemeMode
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,12 +47,33 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsStateWithLifecycle()
+    val cloudSyncEnabled by viewModel.cloudSyncEnabled.collectAsStateWithLifecycle()
     val userName by viewModel.userProfileName.collectAsStateWithLifecycle()
     val userEmail by viewModel.userProfileEmail.collectAsStateWithLifecycle()
 
     var showThemeDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val json = viewModel.exportBackup()
+                context.contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
+            }
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                if (json != null) viewModel.importBackup(json)
+            }
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -157,6 +183,30 @@ fun SettingsScreen(
                 subtitle = "Alerts & reminders",
                 checked = notificationsEnabled,
                 onCheckedChange = { viewModel.setNotificationsEnabled(it) }
+            )
+
+            SettingsToggleItem(
+                icon = Icons.Default.CloudSync,
+                title = "Sync across devices",
+                subtitle = "Keep tasks, notes & captures up to date everywhere",
+                checked = cloudSyncEnabled,
+                onCheckedChange = { viewModel.setCloudSyncEnabled(it) }
+            )
+
+            SettingsSectionHeader("Data")
+
+            SettingsItem(
+                icon = Icons.Default.Upload,
+                title = "Export Data",
+                subtitle = "Save a backup as a JSON file",
+                onClick = { exportLauncher.launch("captureflow_backup.json") }
+            )
+
+            SettingsItem(
+                icon = Icons.Default.Download,
+                title = "Import Data",
+                subtitle = "Restore from a backup file",
+                onClick = { importLauncher.launch(arrayOf("application/json")) }
             )
 
             SettingsSectionHeader("Support")

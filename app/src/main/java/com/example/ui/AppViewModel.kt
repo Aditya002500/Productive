@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,9 @@ import com.example.data.*
 import com.example.data.ai.AiService
 import com.example.data.ai.OcrService
 import com.example.data.repository.AppRepository
+import com.example.data.sync.CloudSyncRepository
+import com.example.data.sync.EraseCloudDataWorker
+import com.example.data.sync.ImageUploadWorker
 import com.example.ui.theme.ThemeMode
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -15,12 +19,26 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.example.widget.RecentNotesWidgetProvider
+import com.example.widget.TodaysTasksWidgetProvider
 import com.google.firebase.auth.userProfileChangeRequest
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.File
+import java.util.UUID
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
+    companion object {
+        const val DAILY_AI_SUMMARY_LIMIT = 5
+    }
+
     private val repository: AppRepository
     private val settingsRepository = SettingsRepository(application)
     private val ocrService = OcrService()
@@ -57,12 +75,46 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = false
     )
+    val cloudSyncEnabled: StateFlow<Boolean> = settingsRepository.cloudSyncEnabled.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    // AI summary daily quota
+    val aiSummariesUsedToday: StateFlow<Int> = settingsRepository.aiSummariesUsedToday.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+    val billingRepository = BillingRepository(application)
+    val isPremium: StateFlow<Boolean> = billingRepository.isPremium
+
+    // Focus timer daily session count
+    val focusSessionsToday: StateFlow<Int> = settingsRepository.focusSessionsToday.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+    private val _quotaExceeded = MutableStateFlow(false)
+    val quotaExceeded: StateFlow<Boolean> = _quotaExceeded.asStateFlow()
+
+    fun clearQuotaExceeded() {
+        _quotaExceeded.value = false
+    }
 
     // Database state flows
     val tasks: StateFlow<List<TaskEntity>>
     val notes: StateFlow<List<NoteEntity>>
     val captures: StateFlow<List<CaptureEntity>>
     val events: StateFlow<List<EventEntity>>
+    val habits: StateFlow<List<HabitEntity>>
+    /** Logs from the last 30 days, used in Habit cards for 7-day strips and stats. */
+    val recentHabitLogs: StateFlow<List<HabitLogEntity>>
+    /** How many active habits have been completed today. Used in Home "Habits Today" widget. */
+    val habitsCompletedTodayCount: StateFlow<Int>
+    /** Total number of active habits. */
+    val totalActiveHabitsCount: StateFlow<Int>
 
     // One-shot draft carried from "Create Task" quick actions (e.g. AI Summary) into CreateTaskScreen.
     private val _taskDraftTitle = MutableStateFlow<String?>(null)
@@ -83,8 +135,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _userProfileEmail = MutableStateFlow("you@example.com")
     val userProfileEmail: StateFlow<String> = _userProfileEmail.asStateFlow()
 
+    private val _userProfilePhotoUrl = MutableStateFlow<String?>(null)
+    val userProfilePhotoUrl: StateFlow<String?> = _userProfilePhotoUrl.asStateFlow()
+
     // Authentication (Firebase Auth — email/password + Google Sign-In)
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private val appDao = AppDatabase.getDatabase(application).appDao()
+    private val cloudSync = CloudSyncRepository(appDao, application)
+    private val backupRepository = BackupRepository(appDao)
 
     val isLoggedIn: Boolean get() = firebaseAuth.currentUser != null
 
@@ -105,6 +163,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 firebaseAuth.signInWithEmailAndPassword(email, password).await()
                 syncProfileFromFirebaseUser()
+                startSyncIfEnabled()
                 onResult(true)
             } catch (e: Exception) {
                 _authError.value = e.toAuthMessage()
@@ -125,6 +184,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     userProfileChangeRequest { displayName = name }
                 )?.await()
                 syncProfileFromFirebaseUser(fallbackName = name)
+                startSyncIfEnabled()
                 onResult(true)
             } catch (e: Exception) {
                 _authError.value = e.toAuthMessage()
@@ -143,6 +203,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 val credential = GoogleAuthProvider.getCredential(idToken, null)
                 firebaseAuth.signInWithCredential(credential).await()
                 syncProfileFromFirebaseUser()
+                startSyncIfEnabled()
                 onResult(true)
             } catch (e: Exception) {
                 _authError.value = e.toAuthMessage()
@@ -165,9 +226,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun signOut() {
+        cloudSync.stopSync()
         firebaseAuth.signOut()
         _userProfileName.value = "Alex"
         _userProfileEmail.value = "you@example.com"
+        _userProfilePhotoUrl.value = null
     }
 
     private fun syncProfileFromFirebaseUser(fallbackName: String? = null) {
@@ -178,6 +241,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             ?: "User"
         _userProfileName.value = name
         _userProfileEmail.value = user.email ?: ""
+        _userProfilePhotoUrl.value = user.photoUrl?.toString()
+    }
+
+    /** Starts the Firestore listeners for the current signed-in user, unless the user has turned cloud sync off. */
+    private fun startSyncIfEnabled() {
+        val uid = firebaseAuth.currentUser?.uid ?: return
+        if (cloudSyncEnabled.value) cloudSync.startSyncForUser(uid, viewModelScope)
+    }
+
+    fun setCloudSyncEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setCloudSyncEnabled(enabled) }
+        if (enabled) startSyncIfEnabled() else cloudSync.stopSync()
     }
 
     private fun Exception.toAuthMessage(): String = when (this) {
@@ -203,8 +278,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val analysisSuccess: StateFlow<String?> = _analysisSuccess.asStateFlow()
 
     init {
-        val appDatabase = AppDatabase.getDatabase(application)
-        repository = AppRepository(appDatabase.appDao())
+        repository = AppRepository(appDao, cloudSync) { cloudSyncEnabled.value }
 
         tasks = repository.allTasks.stateIn(
             scope = viewModelScope,
@@ -230,13 +304,56 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             initialValue = emptyList()
         )
 
-        // Initialize database if empty
-        viewModelScope.launch {
-            repository.prepopulateIfEmpty()
-        }
+        habits = repository.allHabits.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+        val thirtyDaysAgo = java.time.LocalDate.now().minusDays(30).toEpochDay()
+        recentHabitLogs = repository.getHabitLogsFromFlow(thirtyDaysAgo).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+        val todayEpochDay = java.time.LocalDate.now().toEpochDay()
+        habitsCompletedTodayCount = combine(habits, recentHabitLogs) { habitList, logs ->
+            val todayLoggedHabitIds = logs.filter { it.epochDay == todayEpochDay }.map { it.habitId }.toSet()
+            habitList.count { it.isActive && todayLoggedHabitIds.contains(it.id) }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+        totalActiveHabitsCount = habits.map { it.count { h -> h.isActive } }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+        DailyBriefingScheduler.schedule(getApplication())
 
         // If a Firebase session already exists (app relaunch), reflect it immediately.
         syncProfileFromFirebaseUser()
+        viewModelScope.launch {
+            // Read straight from DataStore (not the cloudSyncEnabled StateFlow, which hasn't
+            // started collecting yet at this point) so a disabled preference is honored from cold start.
+            val uid = firebaseAuth.currentUser?.uid
+            if (uid != null && settingsRepository.cloudSyncEnabled.first()) {
+                cloudSync.startSyncForUser(uid, viewModelScope)
+            }
+        }
+
+        // Firestore-confirmed profile snapshots (e.g. a photo/name change made on another device).
+        viewModelScope.launch {
+            cloudSync.remoteProfile.filterNotNull().collect { snap ->
+                if (snap.displayName.isNotBlank()) _userProfileName.value = snap.displayName
+                if (snap.email.isNotBlank()) _userProfileEmail.value = snap.email
+                _userProfilePhotoUrl.value = snap.photoUrl
+            }
+        }
     }
 
     fun updateProfile(name: String, email: String) {
@@ -269,12 +386,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
             }
+            TodaysTasksWidgetProvider.requestUpdate(getApplication<Application>())
         }
     }
 
     fun toggleTaskCompletion(task: TaskEntity) {
         viewModelScope.launch {
             repository.updateTask(task.copy(isCompleted = !task.isCompleted))
+            TodaysTasksWidgetProvider.requestUpdate(getApplication<Application>())
         }
     }
 
@@ -283,6 +402,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repository.getTaskById(taskId)?.let { task ->
                 repository.updateTask(task.copy(notes = newNotes))
             }
+        }
+    }
+
+    fun updateTaskPriority(task: TaskEntity, priority: String) {
+        viewModelScope.launch {
+            repository.updateTask(task.copy(priority = priority))
         }
     }
 
@@ -313,24 +438,112 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Note operations
-    fun addNote(title: String, content: String, date: String = "Oct 24") {
+    fun addNote(title: String, content: String, date: String = "Oct 24", referenceImageUrl: String? = null) {
         viewModelScope.launch {
-            repository.insertNote(NoteEntity(title = title, content = content, date = date))
+            repository.insertNote(
+                NoteEntity(
+                    title = title,
+                    content = content,
+                    date = date,
+                    referenceImageUrls = referenceImageUrl?.let { listOf(it).joinToString(",") } ?: ""
+                )
+            )
         }
     }
 
     /** Creates a new note, or replaces an existing one in place when [id] is non-null. */
-    fun saveNote(id: Int?, title: String, content: String, date: String = "Today") {
+    fun saveNote(
+        id: Int?,
+        title: String,
+        content: String,
+        date: String = "Today",
+        colorTag: Int = 0,
+        referenceImageUrls: List<String> = emptyList(),
+        tags: List<String> = emptyList(),
+        isBold: Boolean = false,
+        isItalic: Boolean = false,
+        fontScale: Float = 1.0f,
+        textColorArgb: Int = 0,
+        aiSummary: String = ""
+    ) {
         viewModelScope.launch {
-            repository.insertNote(NoteEntity(id = id ?: 0, title = title, content = content, date = date))
+            // Preserve the existing syncId on edit — regenerating it here would orphan the old
+            // Firestore doc and create a duplicate under a new id every time a note is saved.
+            val existing = id?.let { repository.getNoteById(it) }
+            val noteSyncId = existing?.syncId ?: UUID.randomUUID().toString()
+            val context = getApplication<Application>().applicationContext
+            val uid = firebaseAuth.currentUser?.uid
+            val finalUrls = referenceImageUrls.mapIndexed { index, url ->
+                if (!url.startsWith("content://")) {
+                    url // already a locally-cached path or a synced https URL — nothing new to upload
+                } else {
+                    try {
+                        val localFile = copyUriToPrivateFile(context, Uri.parse(url), "note_${noteSyncId}_$index.jpg")
+                        if (cloudSyncEnabled.value && uid != null) {
+                            enqueueImageUpload("note", noteSyncId, localFile, "users/$uid/notes/$noteSyncId/$index.jpg", index)
+                        }
+                        Uri.fromFile(localFile).toString()
+                    } catch (e: Exception) {
+                        url
+                    }
+                }
+            }
+            repository.insertNote(
+                NoteEntity(
+                    id = id ?: 0,
+                    title = title,
+                    content = content,
+                    date = date,
+                    colorTag = colorTag,
+                    referenceImageUrls = finalUrls.joinToString(","),
+                    tags = tags.joinToString(","),
+                    isBold = isBold,
+                    isItalic = isItalic,
+                    fontScale = fontScale,
+                    textColorArgb = textColorArgb,
+                    aiSummary = aiSummary,
+                    syncId = noteSyncId
+                )
+            )
+            RecentNotesWidgetProvider.requestUpdate(getApplication<Application>())
         }
     }
 
     fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
             repository.deleteNote(note)
+            RecentNotesWidgetProvider.requestUpdate(getApplication<Application>())
         }
     }
+
+    /**
+     * Generates a short AI summary of a note's content, respecting the same daily quota as
+     * capture analysis. Falls back to a local heuristic (first sentences) when cloud AI is
+     * off or the quota is exhausted, so the button never appears to just fail silently.
+     */
+    suspend fun summarizeNoteContent(content: String): String {
+        if (content.isBlank()) return ""
+        val quotaAvailable = isPremium.value || aiSummariesUsedToday.value < DAILY_AI_SUMMARY_LIMIT
+        return if (cloudAiEnabled.value && quotaAvailable) {
+            aiService.summarizeNote(content).also { settingsRepository.recordAiSummaryUsed() }
+        } else {
+            if (cloudAiEnabled.value && !quotaAvailable) _quotaExceeded.value = true
+            localNoteSummary(content)
+        }
+    }
+
+    private fun localNoteSummary(content: String): String {
+        val sentences = content.split(Regex("(?<=[.!?])\\s+")).filter { it.isNotBlank() }
+        return sentences.take(2).joinToString(" ").ifBlank { content.take(140) }
+    }
+
+    val allNoteTags: StateFlow<List<String>> = notes
+        .map { list -> list.flatMap { it.tags.split(",") }.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sorted() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allCaptureTags: StateFlow<List<String>> = captures
+        .map { list -> list.flatMap { it.tags.split(",") }.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sorted() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Calendar / Event operations
     fun addEvent(title: String, timeRange: String, location: String, day: Int, monthName: String, color: Int = 0) {
@@ -353,6 +566,194 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repository.deleteEvent(event)
         }
     }
+
+    /**
+     * Imports Google Calendar events into the app's own Planner data, upserting by
+     * [com.example.data.calendar.GoogleCalendarEvent.id] so re-imports update in place
+     * instead of duplicating. Returns the number of events imported.
+     */
+    suspend fun importGoogleCalendarEvents(events: List<com.example.data.calendar.GoogleCalendarEvent>): Int {
+        var count = 0
+        events.forEach { gEvent ->
+            val (day, monthName, year, timeRange) = parseGoogleEventSchedule(gEvent) ?: return@forEach
+            val existing = repository.getEventByGoogleEventId(gEvent.id)
+            val entity = EventEntity(
+                id = existing?.id ?: 0,
+                title = gEvent.summary,
+                timeRange = timeRange,
+                location = gEvent.location,
+                day = day,
+                monthName = monthName,
+                year = year,
+                color = existing?.color ?: 0,
+                googleEventId = gEvent.id,
+                syncId = existing?.syncId ?: java.util.UUID.randomUUID().toString()
+            )
+            if (existing != null) repository.updateEvent(entity) else repository.insertEvent(entity)
+            count++
+        }
+        return count
+    }
+
+    private data class ParsedSchedule(val day: Int, val monthName: String, val year: Int, val timeRange: String)
+
+    private fun parseGoogleEventSchedule(gEvent: com.example.data.calendar.GoogleCalendarEvent): ParsedSchedule? {
+        return try {
+            if (gEvent.startDateTime != null) {
+                val start = java.time.OffsetDateTime.parse(gEvent.startDateTime)
+                val timeFormatter = java.time.format.DateTimeFormatter.ofPattern("h:mm a")
+                val timeRange = if (gEvent.endDateTime != null) {
+                    val end = java.time.OffsetDateTime.parse(gEvent.endDateTime)
+                    "${start.format(timeFormatter)} - ${end.format(timeFormatter)}"
+                } else {
+                    start.format(timeFormatter)
+                }
+                ParsedSchedule(
+                    day = start.dayOfMonth,
+                    monthName = start.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()),
+                    year = start.year,
+                    timeRange = timeRange
+                )
+            } else if (gEvent.startDate != null) {
+                val start = java.time.LocalDate.parse(gEvent.startDate)
+                ParsedSchedule(
+                    day = start.dayOfMonth,
+                    monthName = start.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.getDefault()),
+                    year = start.year,
+                    timeRange = "All day"
+                )
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    // Habit operations (recurring reminders + activity tracking)
+    fun addHabit(
+        title: String,
+        intervalHours: Int,
+        habitType: String = "Generic",
+        metricUnit: String = "",
+        dailyGoalValue: Float = 0f,
+        weeklyTargetDays: Int = 7
+    ) {
+        viewModelScope.launch {
+            val id = repository.insertHabit(
+                HabitEntity(
+                    title = title,
+                    intervalHours = intervalHours,
+                    isActive = true,
+                    createdAt = System.currentTimeMillis(),
+                    habitType = habitType,
+                    metricUnit = metricUnit,
+                    dailyGoalValue = dailyGoalValue,
+                    weeklyTargetDays = weeklyTargetDays
+                )
+            ).toInt()
+            HabitScheduler.schedule(getApplication<Application>(), HabitEntity(id = id, title = title, intervalHours = intervalHours, isActive = true))
+        }
+    }
+
+    fun toggleHabitActive(habit: HabitEntity) {
+        viewModelScope.launch {
+            val updated = habit.copy(isActive = !habit.isActive)
+            repository.updateHabit(updated)
+            if (updated.isActive) HabitScheduler.schedule(getApplication<Application>(), updated) else HabitScheduler.cancel(getApplication<Application>(), updated.id)
+        }
+    }
+
+    fun deleteHabit(habit: HabitEntity) {
+        viewModelScope.launch {
+            HabitScheduler.cancel(getApplication<Application>(), habit.id)
+            repository.deleteHabit(habit)
+        }
+    }
+
+    fun completeHabitToday(habit: HabitEntity, metricValue: Float = 0f, note: String = "") {
+        val today = java.time.LocalDate.now().toEpochDay()
+        viewModelScope.launch {
+            // Insert a log entry for this completion
+            repository.insertHabitLog(
+                HabitLogEntity(
+                    habitId = habit.id,
+                    epochDay = today,
+                    metricValue = metricValue,
+                    note = note
+                )
+            )
+            // Only update streak if this is the first completion today
+            if (habit.lastCompletedEpochDay != today) {
+                val newStreak = if (habit.lastCompletedEpochDay == today - 1) habit.currentStreak + 1 else 1
+                repository.updateHabit(
+                    habit.copy(
+                        currentStreak = newStreak,
+                        longestStreak = maxOf(newStreak, habit.longestStreak),
+                        lastCompletedEpochDay = today
+                    )
+                )
+            }
+        }
+    }
+
+    fun getLogsForHabitFlow(habitId: Int) = repository.getLogsForHabitFlow(habitId)
+
+    /** Event operations — toggle done state */
+    fun toggleEventDone(event: EventEntity) {
+        viewModelScope.launch { repository.toggleEventDone(event) }
+    }
+
+    // ---- Cloud image sync helpers ----
+
+    private fun copyUriToPrivateFile(context: Context, uri: Uri, fileName: String): File {
+        val file = File(context.filesDir, fileName)
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            file.outputStream().use { output -> input.copyTo(output) }
+        } ?: throw java.io.IOException("Could not open $uri")
+        return file
+    }
+
+    private fun enqueueImageUpload(entityType: String, syncId: String, localFile: File, remoteStoragePath: String, imageIndex: Int) {
+        val request = OneTimeWorkRequestBuilder<ImageUploadWorker>()
+            .setInputData(
+                Data.Builder()
+                    .putString(ImageUploadWorker.KEY_ENTITY_TYPE, entityType)
+                    .putString(ImageUploadWorker.KEY_ENTITY_SYNC_ID, syncId)
+                    .putString(ImageUploadWorker.KEY_LOCAL_FILE_PATH, localFile.absolutePath)
+                    .putString(ImageUploadWorker.KEY_REMOTE_STORAGE_PATH, remoteStoragePath)
+                    .putInt(ImageUploadWorker.KEY_IMAGE_INDEX, imageIndex)
+                    .build()
+            )
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        val workName = "image_upload_${entityType}_$syncId" + if (imageIndex >= 0) "_$imageIndex" else ""
+        WorkManager.getInstance(getApplication<Application>()).enqueueUniqueWork(workName, ExistingWorkPolicy.REPLACE, request)
+    }
+
+    /** Picks up a new profile photo: caches it locally for an instant preview, then uploads it if cloud sync is on. */
+    fun updateProfilePhoto(uri: Uri) {
+        viewModelScope.launch {
+            val uid = firebaseAuth.currentUser?.uid ?: return@launch
+            val context = getApplication<Application>().applicationContext
+            val localFile = try {
+                copyUriToPrivateFile(context, uri, "profile_$uid.jpg")
+            } catch (e: Exception) {
+                return@launch
+            }
+            _userProfilePhotoUrl.value = Uri.fromFile(localFile).toString()
+            if (cloudSyncEnabled.value) {
+                enqueueImageUpload("profile", uid, localFile, "users/$uid/profile.jpg", -1)
+            }
+        }
+    }
+
+    /**
+     * Local "Productivity Score": completed tasks weigh more than scheduled events
+     * since finishing something is a stronger productivity signal than just planning it.
+     * No per-day timestamps exist yet, so this is a lifetime total, not a weekly one.
+     */
+    val productivityScore: StateFlow<Int> = combine(tasks, events) { taskList, eventList ->
+        taskList.count { it.isCompleted } * 10 + eventList.size * 5
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     // Search Filtering
     fun setSearchQuery(query: String) {
@@ -451,6 +852,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Copies [imageUri] into app-private storage and enqueues its upload, then inserts the capture row. */
+    private suspend fun insertCaptureWithImage(entity: CaptureEntity, imageUri: Uri): Long {
+        val id = repository.insertCapture(entity)
+        if (cloudSyncEnabled.value) {
+            val uid = firebaseAuth.currentUser?.uid
+            if (uid != null) {
+                try {
+                    val context = getApplication<Application>().applicationContext
+                    val localFile = copyUriToPrivateFile(context, imageUri, "capture_${entity.syncId}.jpg")
+                    enqueueImageUpload("capture", entity.syncId, localFile, "users/$uid/captures/${entity.syncId}.jpg", -1)
+                } catch (e: Exception) {
+                    // Non-fatal — the capture is already saved locally with its original image reference.
+                }
+            }
+        }
+        return id
+    }
+
     /**
      * Real capture pipeline: on-device OCR -> text-only cloud AI enrichment ->
      * persist an editable CaptureEntity. The original image URI and raw OCR text
@@ -465,7 +884,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             // 0) Respect the user's on-device processing preference (AI & Privacy settings).
             if (!onDeviceAiEnabled.value) {
-                repository.insertCapture(
+                insertCaptureWithImage(
                     CaptureEntity(
                         title = "Imported image",
                         timestamp = "Just now",
@@ -474,7 +893,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         status = "Needs Review",
                         sourceType = sourceType,
                         confidence = 0f
-                    )
+                    ),
+                    imageUri
                 )
                 _analysisSuccess.value = "On-device processing is off — saved to inbox for manual review."
                 _isAnalyzing.value = false
@@ -490,7 +910,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
             if (ocr == null) {
                 // Could not even open/scan the image — record a failed capture.
-                repository.insertCapture(
+                insertCaptureWithImage(
                     CaptureEntity(
                         title = "Imported image",
                         timestamp = "Just now",
@@ -499,7 +919,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         status = "Failed OCR",
                         sourceType = sourceType,
                         confidence = 0f
-                    )
+                    ),
+                    imageUri
                 )
                 _analysisSuccess.value = "Couldn't read that image — saved for manual review."
                 _isAnalyzing.value = false
@@ -507,11 +928,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             // 2) AI enrichment (text-only; never sends the image). Only calls the
-            // cloud model if the user has cloud AI enabled; otherwise stays fully
-            // on-device with a local best-effort analysis.
-            val analysis = if (cloudAiEnabled.value) {
-                aiService.analyze(ocr.text)
+            // cloud model if the user has cloud AI enabled and the daily quota
+            // isn't exhausted; otherwise stays fully on-device with a local
+            // best-effort analysis.
+            val quotaAvailable = isPremium.value || aiSummariesUsedToday.value < DAILY_AI_SUMMARY_LIMIT
+            val analysis = if (cloudAiEnabled.value && quotaAvailable) {
+                aiService.analyze(ocr.text).also { settingsRepository.recordAiSummaryUsed() }
             } else {
+                if (cloudAiEnabled.value && !quotaAvailable) _quotaExceeded.value = true
                 aiService.localOnlyAnalysis(ocr.text)
             }
 
@@ -524,7 +948,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             // 3) Persist an editable record.
-            repository.insertCapture(
+            insertCaptureWithImage(
                 CaptureEntity(
                     title = analysis.title,
                     timestamp = "Just now",
@@ -539,7 +963,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     entities = analysis.entitiesJson,
                     confidence = combinedConfidence,
                     sourceType = sourceType
-                )
+                ),
+                imageUri
             )
 
             _analysisSuccess.value = when (status) {
@@ -582,9 +1007,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val capture = repository.getCaptureById(captureId) ?: return@launch
             _isAnalyzing.value = true
-            val analysis = if (cloudAiEnabled.value) {
-                aiService.analyze(capture.extractedText)
+            val quotaAvailable = isPremium.value || aiSummariesUsedToday.value < DAILY_AI_SUMMARY_LIMIT
+            val analysis = if (cloudAiEnabled.value && quotaAvailable) {
+                aiService.analyze(capture.extractedText).also { settingsRepository.recordAiSummaryUsed() }
             } else {
+                if (cloudAiEnabled.value && !quotaAvailable) _quotaExceeded.value = true
                 aiService.localOnlyAnalysis(capture.extractedText)
             }
             repository.updateCapture(
@@ -637,12 +1064,34 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { settingsRepository.setConsentGiven(given) }
     }
 
+    fun recordFocusSessionCompleted() {
+        viewModelScope.launch { settingsRepository.recordFocusSessionCompleted() }
+    }
+
+    suspend fun exportBackup(): String = backupRepository.export()
+
+    suspend fun importBackup(json: String) = backupRepository.import(json)
+
     /**
      * Erases all locally-stored personal data (captures, notes, tasks) to satisfy
      * the DPDP Act's user-facing erasure requirement. Settings/consent state is
      * preserved so re-consent isn't forced immediately after.
      */
     fun eraseAllData() {
-        viewModelScope.launch { repository.eraseAllUserData() }
+        viewModelScope.launch {
+            val uid = firebaseAuth.currentUser?.uid
+            cloudSync.stopSync()
+            repository.eraseAllUserData()
+            if (uid != null) {
+                val request = OneTimeWorkRequestBuilder<EraseCloudDataWorker>()
+                    .setInputData(Data.Builder().putString(EraseCloudDataWorker.KEY_UID, uid).build())
+                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                    .build()
+                WorkManager.getInstance(getApplication<Application>())
+                    .enqueueUniqueWork("erase_cloud_data_$uid", ExistingWorkPolicy.REPLACE, request)
+            }
+            // Sync is intentionally left stopped — restarting immediately could reconcile-pull
+            // not-yet-deleted remote docs back down before EraseCloudDataWorker finishes.
+        }
     }
 }

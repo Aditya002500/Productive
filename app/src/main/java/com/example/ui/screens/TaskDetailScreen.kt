@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
@@ -98,26 +99,54 @@ fun TaskDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .background(
-                            if (task.priority == "High") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (task.priority == "High") {
-                            Icon(Icons.Default.PriorityHigh, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
-                        Text(
-                            text = "${task.priority} Priority",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = if (task.priority == "High") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                var priorityMenuExpanded by remember { mutableStateOf(false) }
+
+                Box {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { priorityMenuExpanded = true }
+                            .background(
+                                if (task.priority == "High") MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceVariant
                             )
-                        )
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .testTag("task_priority_tag")
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (task.priority == "High") {
+                                Icon(Icons.Default.PriorityHigh, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                            }
+                            Text(
+                                text = "${task.priority} Priority",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (task.priority == "High") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                Icons.Default.ArrowDropDown,
+                                contentDescription = "Change priority",
+                                modifier = Modifier.size(16.dp),
+                                tint = if (task.priority == "High") MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    DropdownMenu(
+                        expanded = priorityMenuExpanded,
+                        onDismissRequest = { priorityMenuExpanded = false }
+                    ) {
+                        listOf("Low", "Medium", "High").forEach { level ->
+                            DropdownMenuItem(
+                                text = { Text("$level Priority") },
+                                onClick = {
+                                    viewModel.updateTaskPriority(task, level)
+                                    priorityMenuExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -127,14 +156,43 @@ fun TaskDetailScreen(
                 )
             }
 
-            // Task title
-            Text(
-                text = task.title,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+            // Task title + done checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .clickable { viewModel.toggleTaskCompletion(task) }
+                        .background(
+                            if (task.isCompleted) MaterialTheme.colorScheme.primary
+                            else Color.Transparent
+                        )
+                        .border(
+                            2.dp,
+                            if (task.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            CircleShape
+                        )
+                        .testTag("task_done_checkbox"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (task.isCompleted) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onBackground,
+                        textDecoration = if (task.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null
+                    ),
+                    modifier = Modifier.weight(1f)
                 )
-            )
+            }
 
             // Dynamic checklist (Subtasks)
             Column(
